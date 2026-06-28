@@ -890,6 +890,11 @@ const SECTORS = [
   // 上昇・下落注目: 全静的セクターから前日比で自動ソート
   { name: "上昇注目", icon: "📈", dynamic: "UP",   stocks: [] },
   { name: "下落注目", icon: "📉", dynamic: "DOWN", stocks: [] },
+  { name: "ハイパースケーラ", icon: "☁️", stocks: [
+    ["MSFT", "Microsoft (Azure)"], ["AMZN", "Amazon (AWS)"], ["GOOGL", "Alphabet (Google Cloud)"],
+    ["META", "Meta"], ["ORCL", "Oracle (OCI)"], ["NVDA", "NVIDIA (AI基盤)"],
+    ["AVGO", "Broadcom"], ["CRWV", "CoreWeave"],
+  ]},
   { name: "テクノロジー", icon: "💻", stocks: [
     ["AAPL", "Apple"], ["MSFT", "Microsoft"], ["NVDA", "NVIDIA"],
     ["AVGO", "Broadcom"], ["ORCL", "Oracle"], ["CRM", "Salesforce"],
