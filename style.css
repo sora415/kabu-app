@@ -1281,6 +1281,19 @@ footer {
 }
 .srow .row-metrics { grid-column: 1 / -1; }
 
+/* 米国株の時間外（プレ/アフター）表示 */
+.row-metrics .ah { font-weight: 700; }
+.row-metrics .ah.up { color: var(--up); }
+.row-metrics .ah.down { color: var(--down); }
+.row-metrics .ah-sep { color: var(--muted); opacity: 0.6; }
+.after-hours {
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.after-hours.up { color: var(--up); }
+.after-hours.down { color: var(--down); }
+
 .n225-heatmap {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));

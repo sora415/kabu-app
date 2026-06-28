@@ -860,6 +860,12 @@ class Handler(SimpleHTTPRequestHandler):
                         "pbr": q.get("priceToBook"),
                         "divYield": dy,
                         "volume": q.get("regularMarketVolume"),
+                        # 時間外（米国株のプレ/アフターマーケット）。日本株などはNoneのまま。
+                        "marketState": q.get("marketState"),
+                        "preMarketPrice": q.get("preMarketPrice"),
+                        "preMarketChangePercent": q.get("preMarketChangePercent"),
+                        "postMarketPrice": q.get("postMarketPrice"),
+                        "postMarketChangePercent": q.get("postMarketChangePercent"),
                     })
             except Exception:
                 pass

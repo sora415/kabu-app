@@ -207,6 +207,7 @@ function createCard(symbol) {
     <div class="price">— 読み込み中</div>
     <div class="price-jpy"></div>
     <div class="change flat">&nbsp;</div>
+    <div class="after-hours" hidden></div>
     <svg class="spark" viewBox="0 0 300 56" preserveAspectRatio="none"></svg>
     <div class="metrics" hidden>
       <span class="m"><b>PER</b><span data-k="per">—</span></span>
@@ -425,6 +426,19 @@ function fillMetrics(symbol, q) {
   set("vol", fmtVolJa(q.volume));
   set("cap", fmtCap(q.marketCap, q.currency));
   box.hidden = false;
+  // 米国株の時間外（プレ/アフター）。該当しなければ非表示。
+  const ahEl = card.querySelector(".after-hours");
+  if (ahEl) {
+    const ah = afterHoursInfo(q);
+    if (ah) {
+      const sign = ah.pct >= 0 ? "+" : "";
+      ahEl.textContent = `🌙 ${ah.label} ${fmtPrice(ah.price, ah.currency)} (${sign}${ah.pct.toFixed(2)}%)`;
+      ahEl.className = "after-hours " + (ah.pct >= 0 ? "up" : "down");
+      ahEl.hidden = false;
+    } else {
+      ahEl.hidden = true;
+    }
+  }
 }
 let metricsTimer = null;
 function loadWatchMetrics() {
@@ -437,6 +451,26 @@ function loadWatchMetrics() {
       (d.quotes || []).forEach((q) => { if (q.symbol) fillMetrics(q.symbol, q); });
     } catch {}
   }, 120);
+}
+
+// 米国株の時間外（プレ/アフターマーケット）情報。該当しなければ null。
+// marketState: PRE=寄り前 / REGULAR=取引中 / POST,POSTPOST=引け後 / CLOSED=休場
+function afterHoursInfo(q) {
+  const ms = q.marketState;
+  if (ms === "PRE" && q.preMarketPrice != null && q.preMarketChangePercent != null) {
+    return { label: "プレ", price: q.preMarketPrice, pct: q.preMarketChangePercent, currency: q.currency };
+  }
+  if ((ms === "POST" || ms === "POSTPOST" || ms === "CLOSED") &&
+      q.postMarketPrice != null && q.postMarketChangePercent != null) {
+    return { label: "時間外", price: q.postMarketPrice, pct: q.postMarketChangePercent, currency: q.currency };
+  }
+  return null;
+}
+function afterHoursText(q) {
+  const ah = afterHoursInfo(q);
+  if (!ah) return "";
+  const sign = ah.pct >= 0 ? "+" : "";
+  return `🌙${ah.label} ${fmtPrice(ah.price, ah.currency)} (${sign}${ah.pct.toFixed(2)}%)`;
 }
 
 // 行（セクター/ランキング）用のコンパクトな指標1行
@@ -463,9 +497,17 @@ async function fillRowMetrics(syms, root) {
       (d.quotes || []).forEach((q) => {
         if (!q.symbol) return;
         const txt = compactMetrics(q);
-        if (!txt) return;
+        const ah = afterHoursInfo(q);
+        if (!txt && !ah) return;
+        let html = "";
+        if (ah) {
+          const sign = ah.pct >= 0 ? "+" : "";
+          const cls = ah.pct >= 0 ? "up" : "down";
+          html += `<span class="ah ${cls}">🌙${ah.label} ${fmtPrice(ah.price, ah.currency)} (${sign}${ah.pct.toFixed(2)}%)</span>`;
+        }
+        if (txt) html += (ah ? ` <span class="ah-sep">/</span> ` : "") + txt;
         scope.querySelectorAll(`.row-metrics[data-mk="${CSS.escape(q.symbol)}"]`).forEach((el) => {
-          el.textContent = txt;
+          el.innerHTML = html;
           el.hidden = false;
         });
       });
@@ -1825,7 +1867,7 @@ const N225_DIVISOR = 26.5;
 // 上部マーケットストリップ
 const N225_MARKETS = [
   { symbol: "^N225",  label: "日経平均" },
-  { symbol: "NIY=F",  label: "日経先物" },
+  { symbol: "NIY=F",  label: "日経先物(夜間)" },
   { symbol: "1306.T", label: "TOPIX連動(1306)" },
   { symbol: "JPY=X",  label: "ドル円" },
   { symbol: "^DJI",   label: "NYダウ" },
@@ -2792,6 +2834,7 @@ const jpReloadBtn = document.getElementById("jpReload");
 // 上部マーケットストリップ（日本中心＋グローバルの参考指数）
 const JP_MARKETS = [
   { symbol: "^N225",     label: "日経平均" },
+  { symbol: "NIY=F",     label: "日経先物(夜間)" },
   { symbol: "1306.T",    label: "TOPIX(ETF)" },
   { symbol: "2516.T",    label: "東証グロース250" },
   { symbol: "JPY=X",     label: "ドル円" },
