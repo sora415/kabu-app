@@ -895,6 +895,11 @@ const SECTORS = [
     ["META", "Meta"], ["ORCL", "Oracle (OCI)"], ["NVDA", "NVIDIA (AI基盤)"],
     ["AVGO", "Broadcom"], ["CRWV", "CoreWeave"],
   ]},
+  { name: "宇宙", icon: "🚀", stocks: [
+    ["RKLB", "Rocket Lab (打上げ)"], ["ASTS", "AST SpaceMobile (衛星通信)"], ["LUNR", "Intuitive Machines (月面)"],
+    ["RDW", "Redwire (宇宙インフラ)"], ["PL", "Planet Labs (衛星画像)"], ["KTOS", "Kratos (防衛・宇宙)"],
+    ["LMT", "Lockheed Martin"], ["NOC", "Northrop Grumman"], ["BA", "Boeing"],
+  ]},
   { name: "テクノロジー", icon: "💻", stocks: [
     ["AAPL", "Apple"], ["MSFT", "Microsoft"], ["NVDA", "NVIDIA"],
     ["AVGO", "Broadcom"], ["ORCL", "Oracle"], ["CRM", "Salesforce"],
