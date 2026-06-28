@@ -660,17 +660,21 @@ function importBackup(file) {
       `今のデータは上書きされます。よろしいですか？`
     );
     if (!ok) return;
+    // 通知ON/OFFは「その端末ごとの設定」なので、バックアップでは上書きしない
+    // （別端末で書き出したファイルを読んでも、この端末の通知設定は維持する）
+    const KEEP = [NOTIFY_KEY];
     // kabu- の既存キーを消してから復元（クリーンに置き換え）
     const toRemove = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (k && k.startsWith("kabu-")) toRemove.push(k);
+      if (k && k.startsWith("kabu-") && !KEEP.includes(k)) toRemove.push(k);
     }
     toRemove.forEach((k) => localStorage.removeItem(k));
     Object.entries(data).forEach(([k, v]) => {
-      if (k.startsWith("kabu-") && typeof v === "string") localStorage.setItem(k, v);
+      if (k.startsWith("kabu-") && !KEEP.includes(k) && typeof v === "string") localStorage.setItem(k, v);
     });
     showToast("復元しました。画面を更新します…");
+    // 再読み込み後、起動時の同期処理（通知ONなら全銘柄をサーバーへ再送）が走る
     setTimeout(() => location.reload(), 800);
   };
   reader.onerror = () => showToast("ファイルの読み込みに失敗しました");
