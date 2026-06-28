@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: kabu-app
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python server.py
+    envVars:
+      - key: VAPID_PUBLIC
+        sync: false
+      - key: VAPID_PRIVATE
+        sync: false
+      - key: VAPID_SUBJECT
+        value: mailto:kabu-app@example.com
+      - key: CHECK_TOKEN
+        sync: false
+      - key: CHECK_INTERVAL
+        value: "1800"

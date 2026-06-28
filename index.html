@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="株ウォッチ" />
+  <meta name="theme-color" content="#0e1117" />
+  <title>株ウォッチリスト</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="stylesheet" href="style.css?v=20260628c" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>📈 株ウォッチリスト</h1>
+    <div class="refresh-area">
+      <button id="exportBtn" class="ghost" title="ウォッチリスト・保有株・アラートをファイルに保存（バックアップ）">💾 保存</button>
+      <button id="importBtn" class="ghost" title="バックアップファイルから復元">📂 復元</button>
+      <input id="importFile" type="file" accept="application/json,.json" hidden />
+      <button id="notifyBtn" class="ghost" title="レーティング・目標株価の変化をスマホに通知">🔔 通知</button>
+      <button id="themeToggle" class="ghost" title="ライト/ダーク切替">🌙</button>
+      <button id="refreshBtn" class="ghost" title="最新の価格に更新">⟳ 更新</button>
+      <span id="lastUpdated" class="last-updated"></span>
+    </div>
+  </header>
+
+  <!-- 主要指数ストリップ -->
+  <div class="index-strip" id="indexStrip">
+    <div class="idx-tile skeleton"></div>
+    <div class="idx-tile skeleton"></div>
+    <div class="idx-tile skeleton"></div>
+    <div class="idx-tile skeleton"></div>
+  </div>
+
+  <nav class="tabs">
+    <button class="tab active" data-view="watchlist">⭐ ウォッチリスト</button>
+    <button class="tab" data-view="portfolio">💼 ポートフォリオ</button>
+    <button class="tab" data-view="sectors-us">🇺🇸 米国セクター</button>
+    <button class="tab" data-view="sectors-jp">🇯🇵 日本セクター</button>
+    <button class="tab" data-view="jp">🇯🇵 日本市場</button>
+    <button class="tab" data-view="n225">🗾 日経225</button>
+    <button class="tab" data-view="dow">🗽 米国市場</button>
+    <button class="tab" data-view="ndx">💹 NASDAQ100</button>
+    <button class="tab" data-view="heatmap">🟥 ヒートマップ</button>
+    <button class="tab" data-view="earnings">📅 決算</button>
+  </nav>
+
+  <!-- ウォッチリスト画面 -->
+  <div id="view-watchlist" class="view">
+    <section class="add-area">
+      <form id="addForm" autocomplete="off">
+        <div class="search-wrap">
+          <input id="symbolInput" type="text" placeholder="銘柄名・コードで検索（例: トヨタ / AAPL / 7203）" />
+          <div id="searchResults" class="search-results" hidden></div>
+        </div>
+        <button type="submit">＋ 追加</button>
+      </form>
+      <div class="hints">
+        <span>米国株はそのまま:</span>
+        <button class="chip" data-symbol="AAPL">AAPL</button>
+        <button class="chip" data-symbol="TSLA">TSLA</button>
+        <button class="chip" data-symbol="NVDA">NVDA</button>
+        <span class="sep">|</span>
+        <span>日本株は末尾 .T:</span>
+        <button class="chip" data-symbol="7203.T">7203.T トヨタ</button>
+        <button class="chip" data-symbol="6758.T">6758.T ソニー</button>
+        <button class="chip" data-symbol="9984.T">9984.T SBG</button>
+      </div>
+    </section>
+
+    <main>
+      <div class="sort-bar" id="sortBar">
+        <span class="sort-label">並び替え:</span>
+        <button class="sort-btn active" data-sort="added">追加順</button>
+        <button class="sort-btn" data-sort="gain">値上がり順</button>
+        <button class="sort-btn" data-sort="loss">値下がり順</button>
+        <button class="sort-btn" data-sort="name">名前順</button>
+      </div>
+      <div id="empty" class="empty">まだ銘柄がありません。上の入力欄かサンプルから追加してください。</div>
+      <div id="list" class="cards"></div>
+    </main>
+  </div>
+
+  <!-- ポートフォリオ画面 -->
+  <div id="view-portfolio" class="view" hidden>
+    <section class="add-area">
+      <form id="holdingForm" class="holding-form" autocomplete="off">
+        <div class="search-wrap pf-search">
+          <input id="hSymbol" type="text" placeholder="銘柄名・コード（例: トヨタ / AAPL / 7203）" />
+          <div id="hSearchResults" class="search-results" hidden></div>
+        </div>
+        <input id="hShares" type="number" step="any" min="0" placeholder="株数" />
+        <input id="hCost" type="number" step="any" min="0" placeholder="平均取得単価" />
+        <button type="submit">＋ 登録</button>
+      </form>
+      <p class="view-note">保有している株を登録すると、現在値から含み損益を自動計算します。合計は概算で日本円に換算して表示します（データはこの端末内にのみ保存されます）。</p>
+    </section>
+    <main>
+      <div id="pfSummary" class="pf-summary"></div>
+      <div id="pfChart" class="pf-chart" hidden></div>
+      <div id="pfEmpty" class="empty">まだ保有銘柄がありません。上のフォームから登録してください。</div>
+      <div id="pfList" class="pf-list"></div>
+    </main>
+  </div>
+
+  <!-- 米国セクター画面 -->
+  <div id="view-sectors-us" class="view" hidden>
+    <main>
+      <p class="view-note">業種をクリックすると、その分野の代表的な米国株の現在値が表示されます。気になる銘柄は「⭐」でウォッチリストに追加できます。</p>
+      <div id="sectorList" class="sectors"></div>
+    </main>
+  </div>
+
+  <!-- 日本セクター画面 -->
+  <div id="view-sectors-jp" class="view" hidden>
+    <main>
+      <p class="view-note">SBI証券などで使われる東証の業種分類です。業種をクリックすると代表的な日本株の現在値が表示されます。「⭐」でウォッチリストに追加できます。</p>
+      <div id="sectorListJp" class="sectors"></div>
+    </main>
+  </div>
+
+  <!-- 日経225ダッシュボード画面 -->
+  <!-- 日本市場 全体ダッシュボード -->
+  <div id="view-jp" class="view" hidden>
+    <main>
+      <!-- 主要マーケット（指数） -->
+      <div id="jpMarkets" class="n225-markets">
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+      </div>
+
+      <!-- 業種別 騰落 -->
+      <p class="view-note">業種別の騰落（その業種の主要銘柄の平均前日比）。今日はどの業種が買われ・売られているかが一目でわかります。</p>
+      <div id="jpSectors" class="n225-sectors"></div>
+
+      <!-- 値上がり率／値下がり率ランキング（市場全体） -->
+      <div class="kt-head">
+        <p class="view-note">日本市場全体（東証全銘柄）の本日の値上がり率・値下がり率ランキングです。日経225だけでなく全市場が対象。タップでチャートが開きます。</p>
+        <button id="jpReload" class="kt-reload">🔄 最新に更新</button>
+      </div>
+      <div class="n225-contrib">
+        <div class="n225-col">
+          <div class="n225-col-head up">📈 値上がり率ランキング</div>
+          <div id="jpUp" class="n225-rank"></div>
+        </div>
+        <div class="n225-col">
+          <div class="n225-col-head down">📉 値下がり率ランキング</div>
+          <div id="jpDown" class="n225-rank"></div>
+        </div>
+      </div>
+
+      <!-- 主要銘柄ヒートマップ -->
+      <p class="view-note">日本の主要銘柄のヒートマップ。緑が上昇・赤が下落、タイルの大きさは株価の高さの目安です。</p>
+      <div id="jpHeatmap" class="n225-heatmap"></div>
+    </main>
+  </div>
+
+  <div id="view-n225" class="view" hidden>
+    <main>
+      <!-- 主要マーケット -->
+      <div id="n225Markets" class="n225-markets">
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+      </div>
+
+      <!-- 業種別 騰落 -->
+      <p class="view-note">業種別の騰落（その業種の主要銘柄の平均前日比）。今日はどの業種が買われ・売られているかが一目でわかります。</p>
+      <div id="n225Sectors" class="n225-sectors"></div>
+
+      <!-- 値上がり率／値下がり率ランキング -->
+      <p class="view-note">日経平均の構成銘柄を「値上がり率・値下がり率（前日比％）」の大きい順に並べたランキングです。右側の小さい数字は指数への寄与度（何ポイント動かしたか）です。タップでチャートが開きます。</p>
+      <div class="n225-contrib">
+        <div class="n225-col">
+          <div class="n225-col-head up">📈 値上がり率トップ</div>
+          <div id="n225Up" class="n225-rank"></div>
+        </div>
+        <div class="n225-col">
+          <div class="n225-col-head down">📉 値下がり率トップ</div>
+          <div id="n225Down" class="n225-rank"></div>
+        </div>
+      </div>
+
+      <!-- 主要構成銘柄ヒートマップ -->
+      <p class="view-note">主要構成銘柄のヒートマップ。緑が上昇・赤が下落、タイルの大きさは日経平均への影響度（株価の高さ）の目安です。</p>
+      <div id="n225Heatmap" class="n225-heatmap"></div>
+    </main>
+  </div>
+
+  <!-- 米国市場ダッシュボード画面（ダウ30） -->
+  <div id="view-dow" class="view" hidden>
+    <main>
+      <!-- 主要マーケット -->
+      <div id="dowMarkets" class="n225-markets">
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+      </div>
+
+      <!-- 業種別 騰落 -->
+      <p class="view-note">業種別の騰落（その業種の主要米国株の平均前日比）。今日はどの業種が買われ・売られているかが一目でわかります。</p>
+      <div id="dowSectors" class="n225-sectors"></div>
+
+      <!-- 値上がり率／値下がり率ランキング -->
+      <p class="view-note">NYダウ（ダウ30）の構成銘柄を「値上がり率・値下がり率（前日比％）」の大きい順に並べたランキングです。右側の小さい数字は指数への寄与度（何ポイント動かしたか）です。タップでチャートが開きます。</p>
+      <div class="n225-contrib">
+        <div class="n225-col">
+          <div class="n225-col-head up">📈 値上がり率トップ</div>
+          <div id="dowUp" class="n225-rank"></div>
+        </div>
+        <div class="n225-col">
+          <div class="n225-col-head down">📉 値下がり率トップ</div>
+          <div id="dowDown" class="n225-rank"></div>
+        </div>
+      </div>
+
+      <!-- ダウ30構成銘柄ヒートマップ -->
+      <p class="view-note">ダウ30 全構成銘柄のヒートマップ。緑が上昇・赤が下落、タイルの大きさはダウへの影響度（株価の高さ）の目安です。</p>
+      <div id="dowHeatmap" class="n225-heatmap"></div>
+    </main>
+  </div>
+
+  <!-- NASDAQ100ダッシュボード画面 -->
+  <div id="view-ndx" class="view" hidden>
+    <main>
+      <!-- 主要マーケット -->
+      <div id="ndxMarkets" class="n225-markets">
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+        <div class="n225-mk skeleton"></div>
+      </div>
+
+      <!-- 業種別 騰落 -->
+      <p class="view-note">NASDAQの業種別騰落（各業種の主要銘柄の平均前日比）。どの分野が買われ・売られているか一目でわかります。</p>
+      <div id="ndxSectors" class="n225-sectors"></div>
+
+      <!-- 値上がり率／値下がり率ランキング -->
+      <p class="view-note">NASDAQ100の構成銘柄を「値上がり率・値下がり率（前日比％）」の大きい順に並べたランキングです。右側の小さい数字は指数への寄与度（時価総額ウェイト × 前日比）です。タップでチャートが開きます。</p>
+      <div class="n225-contrib">
+        <div class="n225-col">
+          <div class="n225-col-head up">📈 値上がり率トップ</div>
+          <div id="ndxUp" class="n225-rank"></div>
+        </div>
+        <div class="n225-col">
+          <div class="n225-col-head down">📉 値下がり率トップ</div>
+          <div id="ndxDown" class="n225-rank"></div>
+        </div>
+      </div>
+
+      <!-- NASDAQ100ヒートマップ -->
+      <p class="view-note">NASDAQ100 構成銘柄のヒートマップ。緑が上昇・赤が下落、タイルの大きさは時価総額（指数への影響度）の目安です。</p>
+      <div id="ndxHeatmap" class="n225-heatmap"></div>
+    </main>
+  </div>
+
+  <!-- ヒートマップ画面 -->
+  <div id="view-heatmap" class="view" hidden>
+    <main>
+      <p class="view-note">前日比をヒートマップで表示します。緑が上昇・赤が下落。クリックでチャートが開きます。</p>
+      <div class="hm-toolbar">
+        <button class="hm-mode-btn active" data-mode="sectors">🏢 セクター</button>
+        <button class="hm-mode-btn" data-mode="semi">🔬 半導体・AI</button>
+        <button class="hm-mode-btn" data-mode="nasdaq">💹 NASDAQ</button>
+      </div>
+      <div id="heatmapView"></div>
+    </main>
+  </div>
+
+  <!-- ニュース画面 -->
+  <!-- 決算カレンダー画面 -->
+  <div id="view-earnings" class="view" hidden>
+    <main>
+      <p class="view-note">ウォッチリストとポートフォリオに登録した銘柄の次回決算予定日です。近い順に並びます。「予」は予定（推定）日を表します。決算前後は値動きが大きくなりやすいので注意。</p>
+      <div id="earningsList" class="earnings-list"></div>
+    </main>
+  </div>
+
+  <footer>
+    <small>データ: Yahoo Finance（参考値・遅延あり）。投資判断はご自身の責任で。</small>
+  </footer>
+
+  <!-- 銘柄をクリックしたときに出るチャート画面 -->
+  <div id="chartModal" class="modal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-card">
+      <button class="modal-close" title="閉じる">×</button>
+      <div class="modal-head">
+        <div class="modal-name">—</div>
+        <div class="modal-symbol">—</div>
+      </div>
+      <div class="modal-price-row">
+        <span class="modal-price">—</span>
+        <span class="modal-change flat">&nbsp;</span>
+      </div>
+      <div class="modal-ranges">
+        <button class="range-btn" data-range="1d" data-interval="5m">1日</button>
+        <button class="range-btn" data-range="5d" data-interval="30m">1週</button>
+        <button class="range-btn active" data-range="1mo" data-interval="1d">1ヶ月</button>
+        <button class="range-btn" data-range="6mo" data-interval="1d">6ヶ月</button>
+        <button class="range-btn" data-range="1y" data-interval="1d">1年</button>
+        <button class="range-btn" data-range="5y" data-interval="1wk">5年</button>
+      </div>
+      <div class="modal-ma-legend"></div>
+      <div class="modal-chart-wrap">
+        <div class="modal-ohlc"></div>
+        <svg class="modal-chart" viewBox="0 0 640 300" preserveAspectRatio="none"></svg>
+        <div class="modal-axis"></div>
+        <div class="modal-tooltip" hidden></div>
+        <div class="modal-status"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 価格アラート設定 -->
+  <div id="alertModal" class="modal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-card alert-card">
+      <button class="modal-close" title="閉じる">×</button>
+      <div class="modal-name alert-title">🔔 アラート設定</div>
+      <div class="modal-symbol alert-sym">—</div>
+      <p class="alert-note">指定した価格に達したら通知します。空欄にすると、その条件はオフになります。</p>
+      <label class="alert-field">
+        <span>📈 この価格以上になったら知らせる</span>
+        <input type="number" step="any" id="alertAbove" placeholder="例: 200" />
+      </label>
+      <label class="alert-field">
+        <span>📉 この価格以下になったら知らせる</span>
+        <input type="number" step="any" id="alertBelow" placeholder="例: 150" />
+      </label>
+      <div class="alert-divider">― 前日比（%）でも通知 ―</div>
+      <label class="alert-field">
+        <span>📈 前日比がこの％以上 上がったら知らせる</span>
+        <input type="number" step="any" id="alertPctUp" placeholder="例: 5" />
+      </label>
+      <label class="alert-field">
+        <span>📉 前日比がこの％以上 下がったら知らせる</span>
+        <input type="number" step="any" id="alertPctDown" placeholder="例: 5" />
+      </label>
+      <div class="alert-actions">
+        <button id="alertSave" class="alert-save">保存する</button>
+        <button id="alertClear" class="alert-clear">解除</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=20260628c"></script>
+</body>
+</html>

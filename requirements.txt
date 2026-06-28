@@ -1,0 +1,2 @@
+# Web Push 通知の送信に使用（Renderが自動でインストールします）
+pywebpush==2.1.2

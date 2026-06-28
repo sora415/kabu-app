@@ -1,0 +1,8 @@
+# 秘密鍵・購読データ・ログ（公開リポジトリに上げない）
+vapid_keys.json
+subscriptions.json
+rating_state.json
+server.log
+__pycache__/
+*.pyc
+.DS_Store
