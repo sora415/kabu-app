@@ -900,6 +900,11 @@ const SECTORS = [
     ["RDW", "Redwire (宇宙インフラ)"], ["PL", "Planet Labs (衛星画像)"], ["KTOS", "Kratos (防衛・宇宙)"],
     ["LMT", "Lockheed Martin"], ["NOC", "Northrop Grumman"], ["BA", "Boeing"],
   ]},
+  { name: "ゲーム", icon: "🎮", stocks: [
+    ["RBLX", "Roblox"], ["EA", "Electronic Arts"], ["TTWO", "Take-Two (GTA)"],
+    ["APP", "AppLovin"], ["U", "Unity"], ["NTES", "NetEase (中)"],
+    ["SE", "Sea (Garena)"], ["BILI", "Bilibili (中)"],
+  ]},
   { name: "テクノロジー", icon: "💻", stocks: [
     ["AAPL", "Apple"], ["MSFT", "Microsoft"], ["NVDA", "NVIDIA"],
     ["AVGO", "Broadcom"], ["ORCL", "Oracle"], ["CRM", "Salesforce"],
@@ -1326,7 +1331,9 @@ const JP_SECTORS = [
   ]},
   { name: "ゲーム・エンタメ", icon: "🎮", stocks: [
     ["7974.T", "任天堂"], ["9697.T", "カプコン"], ["7832.T", "バンナムHD"],
-    ["9684.T", "スクエニHD"],
+    ["9684.T", "スクエニHD"], ["9766.T", "コナミG"], ["6460.T", "セガサミーHD"],
+    ["3635.T", "コーエーテクモ"], ["3765.T", "ガンホー"], ["3659.T", "ネクソン"],
+    ["2432.T", "DeNA"],
   ]},
   { name: "半導体", icon: "🔬", stocks: [
     ["8035.T", "東京エレクトロン"], ["6920.T", "レーザーテック"], ["6857.T", "アドバンテスト"],
