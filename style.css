@@ -831,6 +831,7 @@ footer {
 }
 .hm-tile:hover { filter: brightness(1.25); }
 .hm-tile.loading { opacity: 0.5; }
+.hm-tile.hm-ah { box-shadow: inset 0 0 0 1.5px rgba(129,161,255,0.55); }
 
 .hm-sym  { font-size: 13px; font-weight: 700; line-height: 1.2; }
 .hm-pct  { font-size: 13px; font-weight: 700; margin-top: 3px; font-variant-numeric: tabular-nums; }

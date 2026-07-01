@@ -1803,6 +1803,7 @@ function currentHmGroups() {
 function buildHeatmap() {
   heatmapEl.innerHTML = "";
   const staticSectors = currentHmGroups();
+  const tilesBySym = new Map(); // symbol -> [{ tile, head, grid }]
   staticSectors.forEach((sector) => {
     const group = document.createElement("div");
     group.className = "hm-group";
@@ -1824,39 +1825,65 @@ function buildHeatmap() {
       tile.innerHTML = `<span class="hm-sym">${symbol}</span><span class="hm-pct">…</span><span class="hm-tag">${sector.name}</span><span class="hm-name">${name}</span>`;
       tile.addEventListener("click", () => openChart(symbol));
       grid.appendChild(tile);
-
-      const cached = quoteCache.get(symbol);
-      if (cached) {
-        renderHmTile(tile, cached);
-        updateHmHead(head, grid);
-      } else {
-        fetchAndCache(symbol).then((data) => {
-          if (data) {
-            renderHmTile(tile, data);
-            updateHmHead(head, grid);
-          } else {
-            tile.classList.remove("loading");
-            tile.querySelector(".hm-pct").textContent = "—";
-          }
-        });
-      }
+      if (!tilesBySym.has(symbol)) tilesBySym.set(symbol, []);
+      tilesBySym.get(symbol).push({ tile, head, grid });
     });
 
     group.appendChild(grid);
     heatmapEl.appendChild(group);
   });
   heatmapBuilt = true;
+
+  // 夜間(プレ/アフター)を反映するため /api/quotes で一括取得
+  const syms = [...tilesBySym.keys()];
+  fetchHmQuotes(syms).then((bySym) => {
+    tilesBySym.forEach((entries, symbol) => {
+      const q = bySym.get(symbol);
+      entries.forEach(({ tile, head, grid }) => {
+        if (q) {
+          renderHmTile(tile, q);
+          updateHmHead(head, grid);
+        } else {
+          tile.classList.remove("loading");
+          tile.querySelector(".hm-pct").textContent = "—";
+        }
+      });
+    });
+  });
+}
+
+// ヒートマップ用: 時間外込みで一括取得し symbol->quote の Map を返す
+async function fetchHmQuotes(syms) {
+  const bySym = new Map();
+  const uniq = [...new Set((syms || []).filter(Boolean))];
+  for (let i = 0; i < uniq.length; i += 50) {
+    const chunk = uniq.slice(i, i + 50);
+    try {
+      const res = await fetch(`/api/quotes?symbols=${encodeURIComponent(chunk.join(","))}`);
+      const d = await res.json();
+      (d.quotes || []).forEach((q) => {
+        if (q && q.symbol) {
+          bySym.set(q.symbol, q);
+          if (!quoteCache.has(q.symbol)) quoteCache.set(q.symbol, q);
+        }
+      });
+    } catch {}
+  }
+  return bySym;
 }
 
 function renderHmTile(tile, data) {
   tile.classList.remove("loading");
-  tile.style.background = changeToColor(data.changePct);
-  tile.dataset.pct = data.changePct ?? "";
+  const ah = afterHoursInfo(data);
+  const pct = ah ? ah.pct : data.changePct;
+  tile.style.background = changeToColor(pct);
+  tile.dataset.pct = pct ?? "";
+  tile.classList.toggle("hm-ah", !!ah);
   const pctEl = tile.querySelector(".hm-pct");
-  if (data.changePct != null) {
-    const sign = data.changePct >= 0 ? "+" : "";
-    pctEl.textContent = `${sign}${data.changePct.toFixed(2)}%`;
-    pctEl.className = "hm-pct " + (data.changePct > 0 ? "up" : data.changePct < 0 ? "down" : "flat");
+  if (pct != null) {
+    const sign = pct >= 0 ? "+" : "";
+    pctEl.textContent = `${ah ? "🌙" : ""}${sign}${pct.toFixed(2)}%`;
+    pctEl.className = "hm-pct " + (pct > 0 ? "up" : pct < 0 ? "down" : "flat");
   } else {
     pctEl.textContent = "—";
     pctEl.className = "hm-pct flat";
