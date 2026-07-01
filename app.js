@@ -905,6 +905,10 @@ const SECTORS = [
     ["APP", "AppLovin"], ["U", "Unity"], ["NTES", "NetEase (中)"],
     ["SE", "Sea (Garena)"], ["BILI", "Bilibili (中)"],
   ]},
+  { name: "電線・ケーブル", icon: "🔌", stocks: [
+    ["PRYMY", "Prysmian"], ["BDC", "Belden"], ["GLW", "Corning (光ファイバー)"],
+    ["APH", "Amphenol"], ["NVT", "nVent"], ["ATKR", "Atkore"],
+  ]},
   { name: "テクノロジー", icon: "💻", stocks: [
     ["AAPL", "Apple"], ["MSFT", "Microsoft"], ["NVDA", "NVIDIA"],
     ["AVGO", "Broadcom"], ["ORCL", "Oracle"], ["CRM", "Salesforce"],
@@ -1240,6 +1244,10 @@ const SEMI_GROUPS = [
     ["SMCI", "Supermicro"], ["DELL", "Dell"], ["HPE", "HPE"], ["VRT", "Vertiv"],
     ["ANET", "Arista"], ["PSTG", "Pure Storage"], ["CRDO", "Credo"], ["ALAB", "Astera Labs"],
     ["MOD", "Modine"], ["6594.T", "ニデック"], ["6503.T", "三菱電機"],
+  ]},
+  { name: "電線・ケーブル", icon: "🔌", stocks: [
+    ["PRYMY", "Prysmian"], ["BDC", "Belden"], ["GLW", "Corning(光ファイバー)"],
+    ["APH", "Amphenol"], ["NVT", "nVent"], ["ATKR", "Atkore"],
   ]},
 ];
 
