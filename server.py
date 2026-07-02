@@ -315,6 +315,25 @@ class Handler(SimpleHTTPRequestHandler):
     def log_message(self, *args):
         pass  # ログを静かに
 
+    def end_headers(self):
+        # 静的ファイルにキャッシュ制御を付与し、スマホの再ダウンロードを減らす。
+        # ?v=付きのjs/cssはバージョンが変わるまで永続キャッシュ（即表示）。
+        # index.html / sw.js / manifest は毎回最新を取りに行かせる。
+        try:
+            parsed = urlparse(self.path)
+            path = parsed.path
+            if not path.startswith("/api/"):
+                ext = path.rsplit(".", 1)[-1].lower() if "." in path else ""
+                if "v=" in parsed.query and ext in ("js", "css"):
+                    self.send_header("Cache-Control", "public, max-age=31536000, immutable")
+                elif path in ("/", "") or ext == "html" or path.endswith(("sw.js", "manifest.json")):
+                    self.send_header("Cache-Control", "no-cache")
+                elif ext in ("png", "jpg", "jpeg", "webp", "svg", "ico"):
+                    self.send_header("Cache-Control", "public, max-age=604800")
+        except Exception:
+            pass
+        super().end_headers()
+
     def do_GET(self):
         parsed = urlparse(self.path)
         if parsed.path == "/api/quote":
