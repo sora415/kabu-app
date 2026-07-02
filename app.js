@@ -16,11 +16,6 @@ const dowSectorsEl = document.getElementById("dowSectors");
 const dowUpEl = document.getElementById("dowUp");
 const dowDownEl = document.getElementById("dowDown");
 const dowHeatmapEl = document.getElementById("dowHeatmap");
-const ndxMarketsEl = document.getElementById("ndxMarkets");
-const ndxSectorsEl = document.getElementById("ndxSectors");
-const ndxUpEl = document.getElementById("ndxUp");
-const ndxDownEl = document.getElementById("ndxDown");
-const ndxHeatmapEl = document.getElementById("ndxHeatmap");
 const heatmapEl = document.getElementById("heatmapView");
 const newsListEl = document.getElementById("newsList");
 
@@ -42,7 +37,6 @@ let usdJpyRate = null;       // ドル円レート（円換算表示用）
 let heatmapBuilt = false;
 let n225Built = false;
 let dowBuilt = false;
-let ndxBuilt = false;
 let heatmapMode = "sectors";
 let newsRegion = "US";
 let newsLoaded = false;
@@ -536,8 +530,6 @@ function handleRefresh() {
     reloadN225();
   } else if (currentView === "dow") {
     reloadDow();
-  } else if (currentView === "ndx") {
-    reloadNdx();
   } else if (currentView === "heatmap") {
     reloadHeatmap();
   } else {
@@ -2324,187 +2316,6 @@ function reloadDow() {
   buildDow();
 }
 
-/* ===== NASDAQ100ダッシュボード（時価総額加重） ===== */
-
-const NDX_MARKETS = [
-  { symbol: "^IXIC", label: "NASDAQ総合" },
-  { symbol: "^NDX",  label: "NASDAQ100" },
-  { symbol: "^GSPC", label: "S&P 500" },
-  { symbol: "^SOX",  label: "半導体(SOX)" },
-  { symbol: "^DJI",  label: "NYダウ" },
-  { symbol: "JPY=X", label: "ドル円" },
-];
-
-// NASDAQ100 構成銘柄（時価総額の大きい順・主要約100銘柄）
-const NDX_CONSTITUENTS = [
-  "AAPL","MSFT","NVDA","AMZN","AVGO","META","NFLX","TSLA","COST","GOOGL",
-  "GOOG","PLTR","CSCO","TMUS","AMD","LIN","INTU","PEP","TXN","BKNG",
-  "QCOM","ISRG","ADBE","AMGN","HON","AMAT","GILD","CMCSA","ADP","VRTX",
-  "PANW","MU","ADI","LRCX","MELI","KLAC","CRWD","SBUX","INTC","CEG",
-  "APP","CDNS","MDLZ","ORLY","SNPS","MAR","CTAS","FTNT","DASH","ABNB",
-  "PYPL","REGN","ADSK","MNST","ROP","AEP","NXPI","PCAR","CPRT","AXON",
-  "ROST","FAST","KDP","PAYX","CHTR","TTD","DDOG","EXC","VRSK","KHC",
-  "XEL","EA","CSGP","LULU","IDXX","BKR","FANG","TTWO","CTSH","GEHC",
-  "ON","CDW","BIIB","GFS","MRVL","WBD","DXCM","ANSS","ZS","ARM",
-  "SMCI","MDB","WDAY","TEAM","MCHP","ODFL","PDD","NOW","ORCL",
-];
-
-let ndxCapData = []; // バッチ取得した時価総額つきデータ
-
-async function buildNdx() {
-  ndxBuilt = true;
-  refreshNdxMarkets();
-  buildNdxSectors();
-  await buildNdxRanking();
-}
-
-async function buildNdxRanking() {
-  ndxUpEl.innerHTML = `<div class="n225-empty">データ取得中…</div>`;
-  ndxDownEl.innerHTML = `<div class="n225-empty">データ取得中…</div>`;
-  ndxHeatmapEl.innerHTML = "";
-
-  // 時価総額つきでまとめて取得 ＆ 指数本体（^NDX）の水準を取得
-  let quotes = [];
-  try {
-    const res = await fetch(`/api/quotes?symbols=${encodeURIComponent(NDX_CONSTITUENTS.join(","))}`);
-    const d = await res.json();
-    quotes = d.quotes || [];
-  } catch { quotes = []; }
-  ndxCapData = quotes;
-
-  const ndxData = await fetchAndCache("^NDX");
-  const ndxLevel = ndxData?.price || 0;
-
-  const valid = quotes.filter((q) => q.marketCap && q.changePct != null);
-  const totalCap = valid.reduce((s, q) => s + q.marketCap, 0) || 1;
-
-  // 寄与度(指数ポイント) ≒ 指数水準 × ウェイト × 前日比/100
-  const rows = valid.map((q) => {
-    const weight = q.marketCap / totalCap;
-    const contrib = ndxLevel * weight * (q.changePct / 100);
-    return { sym: q.symbol, name: q.name, data: q, weight, contrib, cap: q.marketCap, changePct: q.changePct };
-  });
-
-  // 値上がり率／値下がり率（％）の大きい順に並べる（直感に合う順番）
-  const ups = rows.filter((r) => r.changePct > 0).sort((a, b) => b.changePct - a.changePct).slice(0, 15);
-  const downs = rows.filter((r) => r.changePct < 0).sort((a, b) => a.changePct - b.changePct).slice(0, 15);
-
-  renderNdxRank(ndxUpEl, ups, "up");
-  renderNdxRank(ndxDownEl, downs, "down");
-  renderNdxHeatmap(rows);
-}
-
-function renderNdxRank(container, list, dir) {
-  container.innerHTML = "";
-  if (!list.length) {
-    container.innerHTML = `<div class="n225-empty">データなし</div>`;
-    return;
-  }
-  list.forEach((r, i) => {
-    const row = document.createElement("div");
-    row.className = "n225-row";
-    const pts = Math.abs(r.contrib);
-    const sign = r.contrib >= 0 ? "+" : "−";
-    const pctTxt = r.changePct != null
-      ? `${r.changePct >= 0 ? "+" : ""}${r.changePct.toFixed(2)}%`
-      : "—";
-    row.innerHTML = `
-      <span class="n225-rk">${i + 1}</span>
-      <span class="n225-info">
-        <span class="n225-nm">${r.name}</span>
-        <span class="n225-code">${r.sym} · ${(r.weight * 100).toFixed(1)}%</span>
-      </span>
-      <span class="n225-vals">
-        <span class="n225-pts ${dir}">${sign}${pts.toFixed(1)}pt</span>
-        <span class="n225-chg ${dir}">${pctTxt}</span>
-      </span>
-      <span class="row-metrics" data-mk="${r.sym}" hidden></span>`;
-    row.addEventListener("click", () => openChart(r.sym));
-    container.appendChild(row);
-  });
-  fillRowMetrics(list.map((r) => r.sym), container);
-}
-
-function renderNdxHeatmap(rows) {
-  ndxHeatmapEl.innerHTML = "";
-  // タイルの大きさは時価総額（指数への影響度）でランク分け
-  const withCap = rows.filter((r) => r.cap).sort((a, b) => b.cap - a.cap);
-  withCap.forEach((r, idx) => {
-    const tile = document.createElement("div");
-    let sizeCls = "sz-s";
-    if (idx < 8) sizeCls = "sz-l";
-    else if (idx < 24) sizeCls = "sz-m";
-    tile.className = `n225-tile ${sizeCls}`;
-    tile.style.background = changeToColor(r.changePct);
-    const pctTxt = r.changePct != null ? `${r.changePct >= 0 ? "+" : ""}${r.changePct.toFixed(2)}%` : "—";
-    tile.innerHTML = `
-      <span class="n225-tnm">${r.sym}</span>
-      <span class="n225-tpct">${pctTxt}</span>`;
-    tile.addEventListener("click", () => openChart(r.sym));
-    ndxHeatmapEl.appendChild(tile);
-  });
-}
-
-async function refreshNdxMarkets() {
-  const results = await Promise.all(NDX_MARKETS.map(({ symbol }) => fetchAndCache(symbol)));
-  ndxMarketsEl.innerHTML = "";
-  results.forEach((data, i) => {
-    const { label } = NDX_MARKETS[i];
-    const tile = document.createElement("div");
-    tile.className = "n225-mk";
-    if (!data) {
-      tile.innerHTML = `<span class="n225-mk-label">${label}</span><span class="n225-mk-price">—</span>`;
-    } else {
-      const up = (data.change ?? 0) >= 0;
-      const cls = data.change == null ? "flat" : up ? "up" : "down";
-      const sign = up ? "+" : "";
-      const chg = data.changePct != null
-        ? `${up ? "▲" : "▼"} ${sign}${data.changePct.toFixed(2)}%`
-        : "—";
-      tile.innerHTML = `
-        <span class="n225-mk-label">${label}</span>
-        <span class="n225-mk-price">${fmtPrice(data.price, data.currency)}</span>
-        <span class="n225-mk-change ${cls}">${chg}</span>`;
-    }
-    ndxMarketsEl.appendChild(tile);
-  });
-}
-
-// 業種別の騰落（NASDAQの業種グループの平均前日比）
-async function buildNdxSectors() {
-  ndxSectorsEl.innerHTML = `<div class="n225-empty">業種データ取得中…</div>`;
-  const rows = await Promise.all(
-    NASDAQ_GROUPS.map(async (g) => {
-      const results = await Promise.all(g.stocks.map(([sym]) => fetchAndCache(sym)));
-      const valid = results.filter((d) => d && d.changePct != null);
-      const avg = valid.length
-        ? valid.reduce((s, d) => s + d.changePct, 0) / valid.length
-        : null;
-      return { name: g.name, icon: g.icon, avg };
-    })
-  );
-  const valid = rows.filter((r) => r.avg != null).sort((a, b) => b.avg - a.avg);
-  const maxAbs = Math.max(0.1, ...valid.map((r) => Math.abs(r.avg)));
-  ndxSectorsEl.innerHTML = "";
-  valid.forEach((r) => {
-    const up = r.avg >= 0;
-    const w = Math.min(100, (Math.abs(r.avg) / maxAbs) * 100);
-    const row = document.createElement("div");
-    row.className = "n225-sec-row";
-    row.innerHTML = `
-      <span class="n225-sec-name">${r.icon} ${r.name}</span>
-      <span class="n225-sec-bar"><span class="n225-sec-fill ${up ? "up" : "down"}" style="width:${w}%"></span></span>
-      <span class="n225-sec-val ${up ? "up" : "down"}">${up ? "+" : ""}${r.avg.toFixed(2)}%</span>`;
-    ndxSectorsEl.appendChild(row);
-  });
-}
-
-function reloadNdx() {
-  quoteCache.clear();
-  ndxBuilt = false;
-  buildNdx();
-}
-
 /* ===== チャートモーダル（銘柄クリックで表示） ===== */
 
 const modalEl = document.getElementById("chartModal");
@@ -3051,7 +2862,6 @@ function switchView(view) {
   document.getElementById("view-jp").hidden = view !== "jp";
   document.getElementById("view-n225").hidden = view !== "n225";
   document.getElementById("view-dow").hidden = view !== "dow";
-  document.getElementById("view-ndx").hidden = view !== "ndx";
   document.getElementById("view-heatmap").hidden = view !== "heatmap";
   document.getElementById("view-earnings").hidden = view !== "earnings";
   if (view === "portfolio") loadPortfolio();
@@ -3059,7 +2869,6 @@ function switchView(view) {
   if (view === "jp" && !jpBuilt) buildJp();
   if (view === "n225" && !n225Built) buildN225();
   if (view === "dow" && !dowBuilt) buildDow();
-  if (view === "ndx" && !ndxBuilt) buildNdx();
   if (view === "heatmap" && !heatmapBuilt) buildHeatmap();
   if (view === "sectors-us" && !usSectorsSorted) { usSectorsSorted = true; sortSectorsByPerformance(usSectorListEl, SECTORS); }
   if (view === "sectors-jp" && !jpSectorsSorted) { jpSectorsSorted = true; sortSectorsByPerformance(jpSectorListEl, JP_SECTORS); }

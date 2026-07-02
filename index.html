@@ -11,7 +11,7 @@
   <title>株ウォッチリスト</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon-180.png" />
-  <link rel="stylesheet" href="style.css?v=20260701b" />
+  <link rel="stylesheet" href="style.css?v=20260702a" />
 </head>
 <body>
   <header class="topbar">
@@ -43,7 +43,6 @@
     <button class="tab" data-view="jp">🇯🇵 日本市場</button>
     <button class="tab" data-view="n225">🗾 日経225</button>
     <button class="tab" data-view="dow">🗽 米国市場</button>
-    <button class="tab" data-view="ndx">💹 NASDAQ100</button>
     <button class="tab" data-view="heatmap">🟥 ヒートマップ</button>
     <button class="tab" data-view="earnings">📅 決算</button>
   </nav>
@@ -233,42 +232,6 @@
     </main>
   </div>
 
-  <!-- NASDAQ100ダッシュボード画面 -->
-  <div id="view-ndx" class="view" hidden>
-    <main>
-      <!-- 主要マーケット -->
-      <div id="ndxMarkets" class="n225-markets">
-        <div class="n225-mk skeleton"></div>
-        <div class="n225-mk skeleton"></div>
-        <div class="n225-mk skeleton"></div>
-        <div class="n225-mk skeleton"></div>
-        <div class="n225-mk skeleton"></div>
-        <div class="n225-mk skeleton"></div>
-      </div>
-
-      <!-- 業種別 騰落 -->
-      <p class="view-note">NASDAQの業種別騰落（各業種の主要銘柄の平均前日比）。どの分野が買われ・売られているか一目でわかります。</p>
-      <div id="ndxSectors" class="n225-sectors"></div>
-
-      <!-- 値上がり率／値下がり率ランキング -->
-      <p class="view-note">NASDAQ100の構成銘柄を「値上がり率・値下がり率（前日比％）」の大きい順に並べたランキングです。右側の小さい数字は指数への寄与度（時価総額ウェイト × 前日比）です。タップでチャートが開きます。</p>
-      <div class="n225-contrib">
-        <div class="n225-col">
-          <div class="n225-col-head up">📈 値上がり率トップ</div>
-          <div id="ndxUp" class="n225-rank"></div>
-        </div>
-        <div class="n225-col">
-          <div class="n225-col-head down">📉 値下がり率トップ</div>
-          <div id="ndxDown" class="n225-rank"></div>
-        </div>
-      </div>
-
-      <!-- NASDAQ100ヒートマップ -->
-      <p class="view-note">NASDAQ100 構成銘柄のヒートマップ。緑が上昇・赤が下落、タイルの大きさは時価総額（指数への影響度）の目安です。</p>
-      <div id="ndxHeatmap" class="n225-heatmap"></div>
-    </main>
-  </div>
-
   <!-- ヒートマップ画面 -->
   <div id="view-heatmap" class="view" hidden>
     <main>
@@ -359,6 +322,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=20260701b"></script>
+  <script src="app.js?v=20260702a"></script>
 </body>
 </html>
