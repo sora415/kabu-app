@@ -1243,44 +1243,6 @@ const SEMI_GROUPS = [
   ]},
 ];
 
-// ===== NASDAQ-100 主要銘柄ヒートマップ（業界別） =====
-const NASDAQ_GROUPS = [
-  { name: "半導体", icon: "🔬", stocks: [
-    ["NVDA", "NVIDIA"], ["AVGO", "Broadcom"], ["AMD", "AMD"], ["QCOM", "Qualcomm"],
-    ["INTC", "Intel"], ["TXN", "Texas Instr."], ["MU", "Micron"], ["ADI", "Analog Dev."],
-    ["MRVL", "Marvell"], ["NXPI", "NXP"], ["MCHP", "Microchip"], ["ASML", "ASML"],
-    ["AMAT", "Applied Mat."], ["LRCX", "Lam Research"], ["KLAC", "KLA"],
-  ]},
-  { name: "ソフトウェア・IT", icon: "💻", stocks: [
-    ["MSFT", "Microsoft"], ["AAPL", "Apple"], ["ADBE", "Adobe"], ["CRM", "Salesforce"],
-    ["ORCL", "Oracle"], ["CSCO", "Cisco"], ["INTU", "Intuit"], ["NOW", "ServiceNow"],
-    ["PANW", "Palo Alto"], ["CRWD", "CrowdStrike"], ["FTNT", "Fortinet"], ["ADSK", "Autodesk"],
-    ["WDAY", "Workday"], ["TEAM", "Atlassian"], ["DDOG", "Datadog"], ["SNPS", "Synopsys"], ["CDNS", "Cadence"],
-  ]},
-  { name: "通信サービス", icon: "📡", stocks: [
-    ["GOOGL", "Alphabet"], ["META", "Meta"], ["NFLX", "Netflix"], ["CMCSA", "Comcast"],
-    ["TMUS", "T-Mobile"], ["CHTR", "Charter"], ["WBD", "Warner Bros"], ["EA", "Elec. Arts"], ["TTWO", "Take-Two"],
-  ]},
-  { name: "一般消費財", icon: "🛍️", stocks: [
-    ["AMZN", "Amazon"], ["TSLA", "Tesla"], ["MELI", "MercadoLibre"], ["BKNG", "Booking"],
-    ["SBUX", "Starbucks"], ["MAR", "Marriott"], ["ABNB", "Airbnb"], ["ORLY", "O'Reilly"],
-    ["ROST", "Ross Stores"], ["LULU", "Lululemon"], ["PDD", "PDD Holdings"], ["DASH", "DoorDash"],
-  ]},
-  { name: "ヘルスケア", icon: "🏥", stocks: [
-    ["AMGN", "Amgen"], ["GILD", "Gilead"], ["VRTX", "Vertex"], ["REGN", "Regeneron"],
-    ["ISRG", "Intuitive Surg."], ["MRNA", "Moderna"], ["DXCM", "Dexcom"], ["IDXX", "Idexx"],
-    ["BIIB", "Biogen"], ["ILMN", "Illumina"],
-  ]},
-  { name: "生活必需品", icon: "🛒", stocks: [
-    ["COST", "Costco"], ["PEP", "PepsiCo"], ["MDLZ", "Mondelez"], ["KDP", "Keurig DrP"],
-    ["MNST", "Monster"], ["KHC", "Kraft Heinz"],
-  ]},
-  { name: "資本財・その他", icon: "🏗️", stocks: [
-    ["HON", "Honeywell"], ["PCAR", "Paccar"], ["CSX", "CSX"], ["FAST", "Fastenal"],
-    ["ODFL", "Old Dominion"], ["PAYX", "Paychex"], ["CTAS", "Cintas"], ["ADP", "ADP"],
-  ]},
-];
-
 // SBI証券などで使われる東証の業種分類に基づく日本株セクター
 const JP_SECTORS = [
   // 上昇・下落注目: 全静的JPセクターから前日比で自動ソート
@@ -1788,7 +1750,6 @@ function changeToColor(pct) {
 
 function currentHmGroups() {
   if (heatmapMode === "semi") return SEMI_GROUPS;
-  if (heatmapMode === "nasdaq") return NASDAQ_GROUPS;
   return SECTORS.filter((s) => !s.dynamic);
 }
 
