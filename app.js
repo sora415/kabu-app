@@ -901,6 +901,11 @@ const SECTORS = [
     ["PRYMY", "Prysmian"], ["BDC", "Belden"], ["GLW", "Corning (光ファイバー)"],
     ["APH", "Amphenol"], ["NVT", "nVent"], ["ATKR", "Atkore"],
   ]},
+  { name: "精密機器", icon: "🎯", stocks: [
+    ["KEYS", "Keysight (電子計測)"], ["TER", "Teradyne (半導体テスタ)"], ["TDY", "Teledyne"],
+    ["FTV", "Fortive"], ["AME", "Ametek"], ["MTD", "Mettler-Toledo (精密計量)"],
+    ["TRMB", "Trimble (精密測位)"], ["CGNX", "Cognex (マシンビジョン)"], ["GRMN", "Garmin"],
+  ]},
   { name: "テクノロジー", icon: "💻", stocks: [
     ["AAPL", "Apple"], ["MSFT", "Microsoft"], ["NVDA", "NVIDIA"],
     ["AVGO", "Broadcom"], ["ORCL", "Oracle"], ["CRM", "Salesforce"],
@@ -1240,6 +1245,11 @@ const SEMI_GROUPS = [
   { name: "電線・ケーブル", icon: "🔌", stocks: [
     ["PRYMY", "Prysmian"], ["BDC", "Belden"], ["GLW", "Corning(光ファイバー)"],
     ["APH", "Amphenol"], ["NVT", "nVent"], ["ATKR", "Atkore"],
+  ]},
+  { name: "精密機器", icon: "🎯", stocks: [
+    ["KEYS", "Keysight(電子計測)"], ["TER", "Teradyne(半導体テスタ)"], ["TDY", "Teledyne"],
+    ["FTV", "Fortive"], ["AME", "Ametek"], ["MTD", "Mettler-Toledo(精密計量)"],
+    ["TRMB", "Trimble(精密測位)"], ["CGNX", "Cognex(マシンビジョン)"], ["GRMN", "Garmin"],
   ]},
 ];
 
