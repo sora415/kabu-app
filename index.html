@@ -11,7 +11,7 @@
   <title>株ウォッチリスト</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon-180.png" />
-  <link rel="stylesheet" href="style.css?v=20260705b" />
+  <link rel="stylesheet" href="style.css?v=20260705c" />
 </head>
 <body>
   <header class="topbar">
@@ -41,7 +41,6 @@
     <button class="tab" data-view="sectors-us">🇺🇸 米国セクター</button>
     <button class="tab" data-view="sectors-jp">🇯🇵 日本セクター</button>
     <button class="tab" data-view="jp">🇯🇵 日本市場</button>
-    <button class="tab" data-view="n225">🗾 日経225</button>
     <button class="tab" data-view="dow">🗽 米国市場</button>
     <button class="tab" data-view="heatmap">🟥 ヒートマップ</button>
     <button class="tab" data-view="earnings">📅 決算</button>
@@ -121,7 +120,6 @@
     </main>
   </div>
 
-  <!-- 日経225ダッシュボード画面 -->
   <!-- 日本市場 全体ダッシュボード -->
   <div id="view-jp" class="view" hidden>
     <main>
@@ -158,41 +156,6 @@
       <!-- 主要銘柄ヒートマップ -->
       <p class="view-note">日本の主要銘柄のヒートマップ。緑が上昇・赤が下落、タイルの大きさは株価の高さの目安です。</p>
       <div id="jpHeatmap" class="n225-heatmap"></div>
-    </main>
-  </div>
-
-  <div id="view-n225" class="view" hidden>
-    <main>
-      <!-- 主要マーケット -->
-      <div id="n225Markets" class="n225-markets">
-        <div class="n225-mk skeleton"></div>
-        <div class="n225-mk skeleton"></div>
-        <div class="n225-mk skeleton"></div>
-        <div class="n225-mk skeleton"></div>
-        <div class="n225-mk skeleton"></div>
-        <div class="n225-mk skeleton"></div>
-      </div>
-
-      <!-- 業種別 騰落 -->
-      <p class="view-note">業種別の騰落（その業種の主要銘柄の平均前日比）。今日はどの業種が買われ・売られているかが一目でわかります。</p>
-      <div id="n225Sectors" class="n225-sectors"></div>
-
-      <!-- 値上がり率／値下がり率ランキング -->
-      <p class="view-note">日経平均の構成銘柄を「値上がり率・値下がり率（前日比％）」の大きい順に並べたランキングです。右側の小さい数字は指数への寄与度（何ポイント動かしたか）です。タップでチャートが開きます。</p>
-      <div class="n225-contrib">
-        <div class="n225-col">
-          <div class="n225-col-head up">📈 値上がり率トップ</div>
-          <div id="n225Up" class="n225-rank"></div>
-        </div>
-        <div class="n225-col">
-          <div class="n225-col-head down">📉 値下がり率トップ</div>
-          <div id="n225Down" class="n225-rank"></div>
-        </div>
-      </div>
-
-      <!-- 主要構成銘柄ヒートマップ -->
-      <p class="view-note">主要構成銘柄のヒートマップ。緑が上昇・赤が下落、タイルの大きさは日経平均への影響度（株価の高さ）の目安です。</p>
-      <div id="n225Heatmap" class="n225-heatmap"></div>
     </main>
   </div>
 
@@ -321,6 +284,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=20260705b"></script>
+  <script src="app.js?v=20260705c"></script>
 </body>
 </html>

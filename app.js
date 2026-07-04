@@ -6,11 +6,6 @@ const form = document.getElementById("addForm");
 const input = document.getElementById("symbolInput");
 const refreshBtn = document.getElementById("refreshBtn");
 const indexStripEl = document.getElementById("indexStrip");
-const n225MarketsEl = document.getElementById("n225Markets");
-const n225SectorsEl = document.getElementById("n225Sectors");
-const n225UpEl = document.getElementById("n225Up");
-const n225DownEl = document.getElementById("n225Down");
-const n225HeatmapEl = document.getElementById("n225Heatmap");
 const dowMarketsEl = document.getElementById("dowMarkets");
 const dowSectorsEl = document.getElementById("dowSectors");
 const dowUpEl = document.getElementById("dowUp");
@@ -35,7 +30,6 @@ const watchData = new Map(); // ウォッチリスト各銘柄の最新データ
 let usdJpyRate = null;       // ドル円レート（円換算表示用）
 
 let heatmapBuilt = false;
-let n225Built = false;
 let dowBuilt = false;
 let heatmapMode = "sectors";
 let newsRegion = "US";
@@ -111,7 +105,6 @@ function jpNameList() {
     list.push({ key, name, code });
   };
   // 既存の日本株データから名前→コード辞書を構築
-  try { N225_CONSTITUENTS.forEach(([c, n]) => add(c, n)); } catch (e) {}
   try { [...JP_SECTORS, ...SEMI_GROUPS].forEach((s) => (s.stocks || []).forEach(([c, n]) => add(c, n))); } catch (e) {}
   try { JP_MARKETS.forEach((m) => add(m.symbol, m.label)); } catch (e) {}
   _jpNameList = list;
@@ -526,8 +519,6 @@ function handleRefresh() {
     loadEarnings(true);
   } else if (currentView === "sectors-us" || currentView === "sectors-jp") {
     refreshSectors();
-  } else if (currentView === "n225") {
-    reloadN225();
   } else if (currentView === "dow") {
     reloadDow();
   } else if (currentView === "heatmap") {
@@ -1157,13 +1148,15 @@ const SEMI_GROUPS = [
   { name: "GPU・AIアクセラレータ", icon: "🧠", stocks: [
     ["NVDA", "NVIDIA"], ["AMD", "AMD"], ["AVGO", "Broadcom"], ["TSM", "TSMC"],
     ["QCOM", "Qualcomm"], ["MRVL", "Marvell"], ["INTC", "Intel"], ["ARM", "Arm"],
-    ["TSEM", "Tower Semi"], ["6526.T", "ソシオネクスト"],
+    ["TSEM", "Tower Semi"],
   ]},
-  { name: "ファブレス・設計", icon: "✏️", stocks: [
+  { name: "ファブレス・設計(米国)", icon: "✏️", stocks: [
     ["QCOM", "Qualcomm"], ["AVGO", "Broadcom"], ["MRVL", "Marvell"], ["NXPI", "NXP"],
     ["LSCC", "Lattice"], ["RMBS", "Rambus"], ["ALGM", "Allegro"], ["MXL", "MaxLinear"],
     ["AMBA", "Ambarella"], ["INDI", "indie Semi"], ["SMTC", "Semtech"], ["SYNA", "Synaptics"],
     ["CRUS", "Cirrus Logic"], ["SITM", "SiTime"], ["MTSI", "MACOM"], ["CEVA", "CEVA"],
+  ]},
+  { name: "ファブレス・設計(日本)", icon: "✏️", stocks: [
     ["6723.T", "ルネサス"], ["6526.T", "ソシオネクスト"],
   ]},
   { name: "製造装置（米国・欧）", icon: "🛠️", stocks: [
@@ -1185,47 +1178,65 @@ const SEMI_GROUPS = [
     ["AMKR", "Amkor"], ["TSEM", "Tower Semi"], ["2330.TW", "TSMC(台)"], ["2303.TW", "UMC(台)"],
     ["3711.TW", "ASE(台)"], ["005930.KS", "サムスン電子(韓)"], ["000660.KS", "SKハイニックス(韓)"],
   ]},
-  { name: "メモリ・ストレージ", icon: "💾", stocks: [
+  { name: "メモリ・ストレージ(海外)", icon: "💾", stocks: [
     ["MU", "Micron"], ["WDC", "Western Digital"], ["STX", "Seagate"], ["SNDK", "SanDisk"],
-    ["3436.T", "SUMCO"], ["285A.T", "キオクシア"], ["005930.KS", "サムスン電子(韓)"],
-    ["000660.KS", "SKハイニックス(韓)"], ["2408.TW", "Nanya(台)"],
+    ["005930.KS", "サムスン電子(韓)"], ["000660.KS", "SKハイニックス(韓)"], ["2408.TW", "Nanya(台)"],
   ]},
-  { name: "アナログ・電源IC", icon: "🔌", stocks: [
+  { name: "メモリ・ストレージ(日本)", icon: "💾", stocks: [
+    ["285A.T", "キオクシア"], ["3436.T", "SUMCO"],
+  ]},
+  { name: "アナログ・電源IC(米国)", icon: "🔌", stocks: [
     ["TXN", "Texas Instr."], ["ADI", "Analog Dev."], ["MCHP", "Microchip"], ["ON", "ON Semi"],
     ["MPWR", "Monolithic"], ["STM", "STMicro"], ["NXPI", "NXP"], ["DIOD", "Diodes"],
     ["POWI", "Power Integ."], ["SLAB", "Silicon Labs"], ["AOSL", "Alpha&Omega"],
-    ["VICR", "Vicor"], ["SGH", "SMART Global"], ["6963.T", "ローム"], ["6976.T", "新日本無線"],
+    ["VICR", "Vicor"], ["SGH", "SMART Global"],
   ]},
-  { name: "パワー・SiC/GaN", icon: "⚡", stocks: [
-    ["WOLF", "Wolfspeed"], ["ON", "ON Semi"], ["STM", "STMicro"], ["NVTS", "Navitas"],
-    ["IFNNY", "Infineon"], ["6963.T", "ローム"], ["6504.T", "富士電機"], ["6707.T", "サンケン電気"],
+  { name: "アナログ・電源IC(日本)", icon: "🔌", stocks: [
+    ["6963.T", "ローム"],
+  ]},
+  { name: "パワー・SiC/GaN(米欧)", icon: "⚡", stocks: [
+    ["WOLF", "Wolfspeed"], ["ON", "ON Semi"], ["STM", "STMicro(欧)"], ["NVTS", "Navitas"],
+    ["IFNNY", "Infineon(欧)"],
+  ]},
+  { name: "パワー・SiC/GaN(日本)", icon: "⚡", stocks: [
+    ["6963.T", "ローム"], ["6504.T", "富士電機"], ["6707.T", "サンケン電気"],
     ["6502.T", "東芝"], ["6594.T", "ニデック"],
   ]},
-  { name: "通信・RF", icon: "📶", stocks: [
+  { name: "通信・RF(米国)", icon: "📶", stocks: [
     ["QCOM", "Qualcomm"], ["SWKS", "Skyworks"], ["QRVO", "Qorvo"], ["AVGO", "Broadcom"],
     ["MTSI", "MACOM"], ["SLAB", "Silicon Labs"], ["MXL", "MaxLinear"], ["SITM", "SiTime"],
+  ]},
+  { name: "通信・RF(日本)", icon: "📶", stocks: [
     ["6963.T", "ローム"], ["6762.T", "TDK"],
   ]},
-  { name: "光通信・フォトニクス", icon: "💡", stocks: [
+  { name: "光通信・フォトニクス(米国)", icon: "💡", stocks: [
     ["COHR", "Coherent"], ["LITE", "Lumentum"], ["POET", "POET Tech"], ["AAOI", "Applied Opto"],
-    ["MTSI", "MACOM"], ["IIVI", "II-VI"], ["5802.T", "住友電工"], ["6965.T", "浜松ホト"],
-    ["6841.T", "横河電機"], ["7741.T", "HOYA"],
+    ["MTSI", "MACOM"],
+  ]},
+  { name: "光通信・フォトニクス(日本)", icon: "💡", stocks: [
+    ["5802.T", "住友電工"], ["6965.T", "浜松ホト"], ["6841.T", "横河電機"], ["7741.T", "HOYA"],
   ]},
   { name: "EDA・半導体IP", icon: "🧩", stocks: [
     ["SNPS", "Synopsys"], ["CDNS", "Cadence"], ["ARM", "Arm"], ["CEVA", "CEVA"],
     ["RMBS", "Rambus"],
   ]},
-  { name: "半導体材料", icon: "🧪", stocks: [
-    ["ENTG", "Entegris"], ["4063.T", "信越化学"], ["4091.T", "日本酸素"], ["5201.T", "AGC"],
+  { name: "半導体材料(米国)", icon: "🧪", stocks: [
+    ["ENTG", "Entegris"], ["DD", "DuPont"], ["MTRN", "Materion"],
+  ]},
+  { name: "半導体材料(日本)", icon: "🧪", stocks: [
+    ["4063.T", "信越化学"], ["4091.T", "日本酸素"], ["5201.T", "AGC"],
     ["4005.T", "住友化学"], ["4188.T", "三菱ケミカル"], ["4042.T", "東ソー"], ["3407.T", "旭化成"],
     ["4061.T", "デンカ"], ["4901.T", "富士フイルム"], ["6988.T", "日東電工"], ["3402.T", "東レ"],
     ["4109.T", "ステラケミファ"], ["4369.T", "トリケミカル"], ["6890.T", "フェローテック"],
   ]},
-  { name: "MLCC・コンデンサ", icon: "🔲", stocks: [
+  { name: "MLCC・コンデンサ(日本)", icon: "🔲", stocks: [
     ["6981.T", "村田製作所"], ["6976.T", "太陽誘電"], ["6762.T", "TDK"], ["6971.T", "京セラ"],
     ["6752.T", "パナソニック"], ["6997.T", "日本ケミコン"], ["6996.T", "ニチコン"],
-    ["6994.T", "指月電機"], ["6989.T", "北陸電気工業"], ["2327.TW", "ヤゲオ(台)"],
-    ["2492.TW", "Walsin(台)"], ["009150.KS", "サムスン電機(韓)"], ["VSH", "Vishay(米)"], ["KEM", "KEMET"],
+    ["6994.T", "指月電機"], ["6989.T", "北陸電気工業"],
+  ]},
+  { name: "MLCC・コンデンサ(海外)", icon: "🔲", stocks: [
+    ["VSH", "Vishay(米)"], ["2327.TW", "ヤゲオ(台)"], ["2492.TW", "Walsin(台)"],
+    ["009150.KS", "サムスン電機(韓)"],
   ]},
   { name: "電子部品（日本）", icon: "🔧", stocks: [
     ["6981.T", "村田製作所"], ["6762.T", "TDK"], ["6976.T", "太陽誘電"], ["6779.T", "日本電波"],
@@ -1237,10 +1248,13 @@ const SEMI_GROUPS = [
     ["4062.T", "イビデン"], ["6967.T", "新光電気"], ["3105.T", "日清紡"],
     ["3110.T", "日東紡"], ["4216.T", "旭有機材"], ["3402.T", "東レ"],
   ]},
-  { name: "AIサーバー・DC電力", icon: "🖥️", stocks: [
+  { name: "AIサーバー・DC電力(米国)", icon: "🖥️", stocks: [
     ["SMCI", "Supermicro"], ["DELL", "Dell"], ["HPE", "HPE"], ["VRT", "Vertiv"],
     ["ANET", "Arista"], ["PSTG", "Pure Storage"], ["CRDO", "Credo"], ["ALAB", "Astera Labs"],
-    ["MOD", "Modine"], ["6594.T", "ニデック"], ["6503.T", "三菱電機"],
+    ["MOD", "Modine"],
+  ]},
+  { name: "AIサーバー・DC電力(日本)", icon: "🖥️", stocks: [
+    ["6594.T", "ニデック"], ["6503.T", "三菱電機"],
   ]},
   { name: "電線・ケーブル", icon: "🔌", stocks: [
     ["PRYMY", "Prysmian"], ["BDC", "Belden"], ["GLW", "Corning(光ファイバー)"],
@@ -1313,13 +1327,6 @@ const SEMI_GROUPS = [
     ["5334.T", "ニテラ(旧日特陶)"], ["5332.T", "TOTO"], ["6971.T", "京セラ"],
   ]},
   // ===== 電子部品（実装後に使う部品） =====
-  { name: "MLCC・コンデンサ(日本)", icon: "🔋", stocks: [
-    ["6981.T", "村田製作所"], ["6976.T", "太陽誘電"], ["6762.T", "TDK"],
-    ["6997.T", "日本ケミコン"], ["6996.T", "ニチコン"],
-  ]},
-  { name: "MLCC・コンデンサ(米国)", icon: "🔋", stocks: [
-    ["VSH", "Vishay"],
-  ]},
   { name: "水晶デバイス(日本)", icon: "⏱️", stocks: [
     ["6971.T", "京セラ"], ["6724.T", "エプソン"], ["6962.T", "大真空"],
   ]},
@@ -1954,228 +1961,6 @@ function reloadHeatmap() {
   quoteCache.clear();
   heatmapBuilt = false;
   buildHeatmap();
-}
-
-/* ===== 日経225ダッシュボード ===== */
-
-// 日経平均の除数（おおよそ）。寄与度(円→指数ポイント)の換算に使う。
-const N225_DIVISOR = 26.5;
-
-// 上部マーケットストリップ
-const N225_MARKETS = [
-  { symbol: "^N225",  label: "日経平均" },
-  { symbol: "NIY=F",  label: "日経先物(夜間)" },
-  { symbol: "1306.T", label: "TOPIX連動(1306)" },
-  { symbol: "JPY=X",  label: "ドル円" },
-  { symbol: "^DJI",   label: "NYダウ" },
-  { symbol: "^IXIC",  label: "NASDAQ" },
-];
-
-// 日経平均の主要構成銘柄（値がさ・高ウェイト中心）
-const N225_CONSTITUENTS = [
-  ["9983.T", "ファーストリテイリング"],
-  ["8035.T", "東京エレクトロン"],
-  ["6857.T", "アドバンテスト"],
-  ["6954.T", "ファナック"],
-  ["9984.T", "ソフトバンクG"],
-  ["6098.T", "リクルートHD"],
-  ["4063.T", "信越化学工業"],
-  ["6367.T", "ダイキン工業"],
-  ["6758.T", "ソニーG"],
-  ["6861.T", "キーエンス"],
-  ["4543.T", "テルモ"],
-  ["6645.T", "オムロン"],
-  ["7741.T", "HOYA"],
-  ["4503.T", "アステラス製薬"],
-  ["4519.T", "中外製薬"],
-  ["4523.T", "エーザイ"],
-  ["6762.T", "TDK"],
-  ["6971.T", "京セラ"],
-  ["6981.T", "村田製作所"],
-  ["6920.T", "レーザーテック"],
-  ["6594.T", "ニデック"],
-  ["6902.T", "デンソー"],
-  ["7203.T", "トヨタ自動車"],
-  ["7267.T", "ホンダ"],
-  ["7269.T", "スズキ"],
-  ["7011.T", "三菱重工業"],
-  ["7012.T", "川崎重工業"],
-  ["7013.T", "IHI"],
-  ["8306.T", "三菱UFJ"],
-  ["8316.T", "三井住友FG"],
-  ["8411.T", "みずほFG"],
-  ["8766.T", "東京海上HD"],
-  ["8058.T", "三菱商事"],
-  ["8031.T", "三井物産"],
-  ["8001.T", "伊藤忠商事"],
-  ["8053.T", "住友商事"],
-  ["2914.T", "JT"],
-  ["4502.T", "武田薬品工業"],
-  ["4661.T", "オリエンタルランド"],
-  ["9433.T", "KDDI"],
-  ["9432.T", "NTT"],
-  ["9434.T", "ソフトバンク"],
-  ["4452.T", "花王"],
-  ["2802.T", "味の素"],
-  ["3382.T", "セブン&アイ"],
-  ["9020.T", "JR東日本"],
-  ["9022.T", "JR東海"],
-  ["9101.T", "日本郵船"],
-  ["5401.T", "日本製鉄"],
-  ["5108.T", "ブリヂストン"],
-  ["7751.T", "キヤノン"],
-  ["6501.T", "日立製作所"],
-  ["6503.T", "三菱電機"],
-  ["6702.T", "富士通"],
-  ["8801.T", "三井不動産"],
-  ["1605.T", "INPEX"],
-  ["5020.T", "ENEOS"],
-  ["4901.T", "富士フイルム"],
-  ["6273.T", "SMC"],
-  ["7974.T", "任天堂"],
-];
-
-// 寄与度ポイント = 前日比(円) / 除数
-function n225Contribution(data) {
-  if (!data || data.change == null) return null;
-  return data.change / N225_DIVISOR;
-}
-
-async function buildN225() {
-  n225Built = true;
-  refreshN225Markets();
-  buildN225Sectors();
-
-  // 構成銘柄をまとめて取得
-  const rows = await Promise.all(
-    N225_CONSTITUENTS.map(async ([sym, name]) => {
-      const data = await fetchAndCache(sym);
-      return { sym, name, data, contrib: n225Contribution(data) };
-    })
-  );
-
-  // 値上がり率／値下がり率（％）の大きい順に並べる（直感に合う順番）
-  const valid = rows.filter((r) => r.data && r.data.changePct != null);
-  const ups = valid.filter((r) => r.data.changePct > 0).sort((a, b) => b.data.changePct - a.data.changePct).slice(0, 15);
-  const downs = valid.filter((r) => r.data.changePct < 0).sort((a, b) => a.data.changePct - b.data.changePct).slice(0, 15);
-
-  renderN225Rank(n225UpEl, ups, "up");
-  renderN225Rank(n225DownEl, downs, "down");
-  renderN225Heatmap(rows);
-}
-
-function renderN225Rank(container, list, dir) {
-  container.innerHTML = "";
-  if (!list.length) {
-    container.innerHTML = `<div class="n225-empty">データ取得中…</div>`;
-    return;
-  }
-  list.forEach((r, i) => {
-    const row = document.createElement("div");
-    row.className = "n225-row";
-    const pts = Math.abs(r.contrib);
-    const sign = r.contrib >= 0 ? "+" : "−";
-    const pctTxt = r.data.changePct != null
-      ? `${r.data.changePct >= 0 ? "+" : ""}${r.data.changePct.toFixed(2)}%`
-      : "—";
-    row.innerHTML = `
-      <span class="n225-rk">${i + 1}</span>
-      <span class="n225-info">
-        <span class="n225-nm">${r.name}</span>
-        <span class="n225-code">${r.sym.replace(".T", "")}</span>
-      </span>
-      <span class="n225-vals">
-        <span class="n225-pts ${dir}">${sign}${pts.toFixed(1)}円</span>
-        <span class="n225-chg ${dir}">${pctTxt}</span>
-      </span>
-      <span class="row-metrics" data-mk="${r.sym}" hidden></span>`;
-    row.addEventListener("click", () => openChart(r.sym));
-    container.appendChild(row);
-  });
-  fillRowMetrics(list.map((r) => r.sym), container);
-}
-
-function renderN225Heatmap(rows) {
-  n225HeatmapEl.innerHTML = "";
-  // タイルの大きさは株価の高さ（指数への影響度の目安）でランク分け
-  const withPrice = rows.filter((r) => r.data && r.data.price != null);
-  withPrice.sort((a, b) => b.data.price - a.data.price);
-  withPrice.forEach((r, idx) => {
-    const tile = document.createElement("div");
-    let sizeCls = "sz-s";
-    if (idx < 6) sizeCls = "sz-l";
-    else if (idx < 18) sizeCls = "sz-m";
-    tile.className = `n225-tile ${sizeCls}`;
-    tile.style.background = changeToColor(r.data.changePct);
-    const pct = r.data.changePct;
-    const pctTxt = pct != null ? `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%` : "—";
-    tile.innerHTML = `
-      <span class="n225-tnm">${r.name}</span>
-      <span class="n225-tpct">${pctTxt}</span>`;
-    tile.addEventListener("click", () => openChart(r.sym));
-    n225HeatmapEl.appendChild(tile);
-  });
-}
-
-async function refreshN225Markets() {
-  const results = await Promise.all(N225_MARKETS.map(({ symbol }) => fetchAndCache(symbol)));
-  n225MarketsEl.innerHTML = "";
-  results.forEach((data, i) => {
-    const { label } = N225_MARKETS[i];
-    const tile = document.createElement("div");
-    tile.className = "n225-mk";
-    if (!data) {
-      tile.innerHTML = `<span class="n225-mk-label">${label}</span><span class="n225-mk-price">—</span>`;
-    } else {
-      const up = (data.change ?? 0) >= 0;
-      const cls = data.change == null ? "flat" : up ? "up" : "down";
-      const sign = up ? "+" : "";
-      const chg = data.changePct != null
-        ? `${up ? "▲" : "▼"} ${sign}${data.changePct.toFixed(2)}%`
-        : "—";
-      tile.innerHTML = `
-        <span class="n225-mk-label">${label}</span>
-        <span class="n225-mk-price">${fmtPrice(data.price, data.currency)}</span>
-        <span class="n225-mk-change ${cls}">${chg}</span>`;
-    }
-    n225MarketsEl.appendChild(tile);
-  });
-}
-
-// 業種別の騰落（日本セクターの主要銘柄の平均前日比）
-async function buildN225Sectors() {
-  const groups = JP_SECTORS.filter((s) => !s.dynamic);
-  n225SectorsEl.innerHTML = `<div class="n225-empty">業種データ取得中…</div>`;
-  const rows = await Promise.all(
-    groups.map(async (g) => {
-      const results = await Promise.all(g.stocks.map(([sym]) => fetchAndCache(sym)));
-      const valid = results.filter((d) => d && d.changePct != null);
-      const avg = valid.length
-        ? valid.reduce((s, d) => s + d.changePct, 0) / valid.length
-        : null;
-      return { name: g.name, icon: g.icon, avg, count: valid.length, total: g.stocks.length };
-    })
-  );
-  const valid = rows.filter((r) => r.avg != null).sort((a, b) => b.avg - a.avg);
-  const maxAbs = Math.max(0.1, ...valid.map((r) => Math.abs(r.avg)));
-  n225SectorsEl.innerHTML = "";
-  valid.forEach((r) => {
-    const up = r.avg >= 0;
-    const w = Math.min(100, (Math.abs(r.avg) / maxAbs) * 100);
-    const row = document.createElement("div");
-    row.className = "n225-sec-row";
-    row.innerHTML = `
-      <span class="n225-sec-name">${r.icon} ${r.name}</span>
-      <span class="n225-sec-bar"><span class="n225-sec-fill ${up ? "up" : "down"}" style="width:${w}%"></span></span>
-      <span class="n225-sec-val ${up ? "up" : "down"}">${up ? "+" : ""}${r.avg.toFixed(2)}%</span>`;
-    n225SectorsEl.appendChild(row);
-  });
-}
-
-function reloadN225() {
-  quoteCache.clear();
-  n225Built = false;
-  buildN225();
 }
 
 /* ===== 米国市場ダッシュボード（ダウ30） ===== */
@@ -2863,11 +2648,75 @@ function renderJpRank(container, rows, dir) {
   fillRowMetrics(rows.slice(0, 20).map((r) => `${r.code}.T`), container);
 }
 
-// 主要銘柄ヒートマップ（日経225主要銘柄を流用）
+// 日本の主要銘柄（値がさ・高ウェイト中心）— 日本株タブのヒートマップで使用
+const JP_MAJOR_STOCKS = [
+  ["9983.T", "ファーストリテイリング"],
+  ["8035.T", "東京エレクトロン"],
+  ["6857.T", "アドバンテスト"],
+  ["6954.T", "ファナック"],
+  ["9984.T", "ソフトバンクG"],
+  ["6098.T", "リクルートHD"],
+  ["4063.T", "信越化学工業"],
+  ["6367.T", "ダイキン工業"],
+  ["6758.T", "ソニーG"],
+  ["6861.T", "キーエンス"],
+  ["4543.T", "テルモ"],
+  ["6645.T", "オムロン"],
+  ["7741.T", "HOYA"],
+  ["4503.T", "アステラス製薬"],
+  ["4519.T", "中外製薬"],
+  ["4523.T", "エーザイ"],
+  ["6762.T", "TDK"],
+  ["6971.T", "京セラ"],
+  ["6981.T", "村田製作所"],
+  ["6920.T", "レーザーテック"],
+  ["6594.T", "ニデック"],
+  ["6902.T", "デンソー"],
+  ["7203.T", "トヨタ自動車"],
+  ["7267.T", "ホンダ"],
+  ["7269.T", "スズキ"],
+  ["7011.T", "三菱重工業"],
+  ["7012.T", "川崎重工業"],
+  ["7013.T", "IHI"],
+  ["8306.T", "三菱UFJ"],
+  ["8316.T", "三井住友FG"],
+  ["8411.T", "みずほFG"],
+  ["8766.T", "東京海上HD"],
+  ["8058.T", "三菱商事"],
+  ["8031.T", "三井物産"],
+  ["8001.T", "伊藤忠商事"],
+  ["8053.T", "住友商事"],
+  ["2914.T", "JT"],
+  ["4502.T", "武田薬品工業"],
+  ["4661.T", "オリエンタルランド"],
+  ["9433.T", "KDDI"],
+  ["9432.T", "NTT"],
+  ["9434.T", "ソフトバンク"],
+  ["4452.T", "花王"],
+  ["2802.T", "味の素"],
+  ["3382.T", "セブン&アイ"],
+  ["9020.T", "JR東日本"],
+  ["9022.T", "JR東海"],
+  ["9101.T", "日本郵船"],
+  ["5401.T", "日本製鉄"],
+  ["5108.T", "ブリヂストン"],
+  ["7751.T", "キヤノン"],
+  ["6501.T", "日立製作所"],
+  ["6503.T", "三菱電機"],
+  ["6702.T", "富士通"],
+  ["8801.T", "三井不動産"],
+  ["1605.T", "INPEX"],
+  ["5020.T", "ENEOS"],
+  ["4901.T", "富士フイルム"],
+  ["6273.T", "SMC"],
+  ["7974.T", "任天堂"],
+];
+
+// 主要銘柄ヒートマップ（日本主要銘柄を流用）
 async function buildJpHeatmap() {
   jpHeatmapEl.innerHTML = `<div class="n225-empty">ヒートマップ取得中…</div>`;
   const rows = await Promise.all(
-    N225_CONSTITUENTS.map(async ([sym, name]) => {
+    JP_MAJOR_STOCKS.map(async ([sym, name]) => {
       const data = await fetchAndCache(sym);
       return { sym, name, data };
     })
@@ -2912,14 +2761,12 @@ function switchView(view) {
   document.getElementById("view-sectors-us").hidden = view !== "sectors-us";
   document.getElementById("view-sectors-jp").hidden = view !== "sectors-jp";
   document.getElementById("view-jp").hidden = view !== "jp";
-  document.getElementById("view-n225").hidden = view !== "n225";
   document.getElementById("view-dow").hidden = view !== "dow";
   document.getElementById("view-heatmap").hidden = view !== "heatmap";
   document.getElementById("view-earnings").hidden = view !== "earnings";
   if (view === "portfolio") loadPortfolio();
   if (view === "earnings") loadEarnings();
   if (view === "jp" && !jpBuilt) buildJp();
-  if (view === "n225" && !n225Built) buildN225();
   if (view === "dow" && !dowBuilt) buildDow();
   if (view === "heatmap" && !heatmapBuilt) buildHeatmap();
   if (view === "sectors-us" && !usSectorsSorted) { usSectorsSorted = true; sortSectorsByPerformance(usSectorListEl, SECTORS); }
