@@ -883,6 +883,15 @@ const SECTORS = [
     ["RDW", "Redwire (宇宙インフラ)"], ["PL", "Planet Labs (衛星画像)"], ["KTOS", "Kratos (防衛・宇宙)"],
     ["LMT", "Lockheed Martin"], ["NOC", "Northrop Grumman"], ["BA", "Boeing"],
   ]},
+  { name: "防衛", icon: "🛡️", stocks: [
+    ["LMT", "Lockheed Martin"], ["RTX", "RTX (旧Raytheon)"], ["NOC", "Northrop Grumman"],
+    ["GD", "General Dynamics"], ["LHX", "L3Harris"], ["BA", "Boeing"], ["HII", "Huntington Ingalls (造船)"],
+    ["LDOS", "Leidos"], ["AXON", "Axon (装備)"], ["TDG", "TransDigm"], ["HWM", "Howmet"], ["PLTR", "Palantir (防衛AI)"],
+  ]},
+  { name: "ドローン・eVTOL", icon: "🚁", stocks: [
+    ["AVAV", "AeroVironment"], ["KTOS", "Kratos"], ["RCAT", "Red Cat"], ["ONDS", "Ondas"],
+    ["UMAC", "Unusual Machines"], ["EH", "EHang (中)"], ["ACHR", "Archer (eVTOL)"], ["JOBY", "Joby (eVTOL)"],
+  ]},
   { name: "ゲーム", icon: "🎮", stocks: [
     ["RBLX", "Roblox"], ["EA", "Electronic Arts"], ["TTWO", "Take-Two (GTA)"],
     ["APP", "AppLovin"], ["U", "Unity"], ["NTES", "NetEase (中)"],
@@ -1437,6 +1446,16 @@ const JP_SECTORS = [
   { name: "クリーンエネルギー", icon: "🌱", stocks: [
     ["6988.T", "日東電工"], ["6674.T", "GSユアサ"], ["7735.T", "SCREEN HD"],
     ["5334.T", "日本特殊陶業"], ["6981.T", "村田製作所"], ["4901.T", "富士フイルム"],
+  ]},
+  { name: "防衛", icon: "🛡️", stocks: [
+    ["7011.T", "三菱重工業"], ["7012.T", "川崎重工業"], ["7013.T", "IHI"],
+    ["6503.T", "三菱電機(防衛電子)"], ["7721.T", "東京計器"], ["5631.T", "日本製鋼所"],
+    ["6208.T", "石川製作所"], ["6203.T", "豊和工業"], ["4274.T", "細谷火工"],
+    ["6701.T", "NEC"], ["6702.T", "富士通"],
+  ]},
+  { name: "ドローン", icon: "🚁", stocks: [
+    ["6232.T", "ACSL(自律制御)"], ["4667.T", "アイサンテクノロジー(測量)"],
+    ["7011.T", "三菱重工業(防衛ドローン)"], ["6203.T", "豊和工業"],
   ]},
 
   // ===== 東証33業種（公式分類） =====
