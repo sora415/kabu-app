@@ -1145,6 +1145,7 @@ const SECTORS = [
 
 // ===== 半導体・AI 詳細ヒートマップ（サブセクター別・多銘柄） =====
 const SEMI_GROUPS = [
+  // ===== 🇺🇸 米国・海外 =====
   { name: "GPU・AIアクセラレータ", icon: "🧠", stocks: [
     ["NVDA", "NVIDIA"], ["AMD", "AMD"], ["AVGO", "Broadcom"], ["TSM", "TSMC"],
     ["QCOM", "Qualcomm"], ["MRVL", "Marvell"], ["INTC", "Intel"], ["ARM", "Arm"],
@@ -1156,22 +1157,12 @@ const SEMI_GROUPS = [
     ["AMBA", "Ambarella"], ["INDI", "indie Semi"], ["SMTC", "Semtech"], ["SYNA", "Synaptics"],
     ["CRUS", "Cirrus Logic"], ["SITM", "SiTime"], ["MTSI", "MACOM"], ["CEVA", "CEVA"],
   ]},
-  { name: "ファブレス・設計(日本)", icon: "✏️", stocks: [
-    ["6723.T", "ルネサス"], ["6526.T", "ソシオネクスト"],
-  ]},
   { name: "製造装置（米国・欧）", icon: "🛠️", stocks: [
     ["ASML", "ASML"], ["AMAT", "Applied Mat."], ["LRCX", "Lam Research"], ["KLAC", "KLA"],
     ["ACLS", "Axcelis"], ["ONTO", "Onto Innov."], ["AEIS", "Advanced Energy"],
     ["KLIC", "Kulicke&Soffa"], ["COHU", "Cohu"], ["FORM", "FormFactor"],
     ["UCTT", "Ultra Clean"], ["VECO", "Veeco"], ["ICHR", "Ichor"], ["NVMI", "Nova(イスラエル)"],
     ["CAMT", "Camtek(イスラエル)"], ["ASYS", "Amtech"],
-  ]},
-  { name: "製造装置（日本）", icon: "🗾", stocks: [
-    ["8035.T", "東京エレク"], ["6920.T", "レーザーテック"], ["6857.T", "アドバンテスト"],
-    ["6525.T", "KOKUSAIエレク"],
-    ["7731.T", "ニコン"], ["6146.T", "ディスコ"], ["6728.T", "アルバック"], ["6315.T", "TOWA"],
-    ["7729.T", "東京精密"], ["6951.T", "日本電子"], ["6080.T", "ハーモニック"],
-    ["7701.T", "島津製作所"], ["7735.T", "SCREEN"], ["6890.T", "フェローテック"],
   ]},
   { name: "ファウンドリ・OSAT", icon: "🏭", stocks: [
     ["TSM", "TSMC"], ["GFS", "GlobalFoundries"], ["UMC", "UMC"], ["ASX", "ASE"],
@@ -1182,39 +1173,23 @@ const SEMI_GROUPS = [
     ["MU", "Micron"], ["WDC", "Western Digital"], ["STX", "Seagate"], ["SNDK", "SanDisk"],
     ["005930.KS", "サムスン電子(韓)"], ["000660.KS", "SKハイニックス(韓)"], ["2408.TW", "Nanya(台)"],
   ]},
-  { name: "メモリ・ストレージ(日本)", icon: "💾", stocks: [
-    ["285A.T", "キオクシア"], ["3436.T", "SUMCO"],
-  ]},
   { name: "アナログ・電源IC(米国)", icon: "🔌", stocks: [
     ["TXN", "Texas Instr."], ["ADI", "Analog Dev."], ["MCHP", "Microchip"], ["ON", "ON Semi"],
     ["MPWR", "Monolithic"], ["STM", "STMicro"], ["NXPI", "NXP"], ["DIOD", "Diodes"],
     ["POWI", "Power Integ."], ["SLAB", "Silicon Labs"], ["AOSL", "Alpha&Omega"],
     ["VICR", "Vicor"], ["SGH", "SMART Global"],
   ]},
-  { name: "アナログ・電源IC(日本)", icon: "🔌", stocks: [
-    ["6963.T", "ローム"],
-  ]},
   { name: "パワー・SiC/GaN(米欧)", icon: "⚡", stocks: [
     ["WOLF", "Wolfspeed"], ["ON", "ON Semi"], ["STM", "STMicro(欧)"], ["NVTS", "Navitas"],
     ["IFNNY", "Infineon(欧)"],
-  ]},
-  { name: "パワー・SiC/GaN(日本)", icon: "⚡", stocks: [
-    ["6963.T", "ローム"], ["6504.T", "富士電機"], ["6707.T", "サンケン電気"],
-    ["6502.T", "東芝"], ["6594.T", "ニデック"],
   ]},
   { name: "通信・RF(米国)", icon: "📶", stocks: [
     ["QCOM", "Qualcomm"], ["SWKS", "Skyworks"], ["QRVO", "Qorvo"], ["AVGO", "Broadcom"],
     ["MTSI", "MACOM"], ["SLAB", "Silicon Labs"], ["MXL", "MaxLinear"], ["SITM", "SiTime"],
   ]},
-  { name: "通信・RF(日本)", icon: "📶", stocks: [
-    ["6963.T", "ローム"], ["6762.T", "TDK"],
-  ]},
   { name: "光通信・フォトニクス(米国)", icon: "💡", stocks: [
     ["COHR", "Coherent"], ["LITE", "Lumentum"], ["POET", "POET Tech"], ["AAOI", "Applied Opto"],
     ["MTSI", "MACOM"],
-  ]},
-  { name: "光通信・フォトニクス(日本)", icon: "💡", stocks: [
-    ["5802.T", "住友電工"], ["6965.T", "浜松ホト"], ["6841.T", "横河電機"], ["7741.T", "HOYA"],
   ]},
   { name: "EDA・半導体IP", icon: "🧩", stocks: [
     ["SNPS", "Synopsys"], ["CDNS", "Cadence"], ["ARM", "Arm"], ["CEVA", "CEVA"],
@@ -1222,6 +1197,76 @@ const SEMI_GROUPS = [
   ]},
   { name: "半導体材料(米国)", icon: "🧪", stocks: [
     ["ENTG", "Entegris"], ["DD", "DuPont"], ["MTRN", "Materion"],
+  ]},
+  { name: "MLCC・コンデンサ(海外)", icon: "🔲", stocks: [
+    ["VSH", "Vishay(米)"], ["2327.TW", "ヤゲオ(台)"], ["2492.TW", "Walsin(台)"],
+    ["009150.KS", "サムスン電機(韓)"],
+  ]},
+  { name: "AIサーバー・DC電力(米国)", icon: "🖥️", stocks: [
+    ["SMCI", "Supermicro"], ["DELL", "Dell"], ["HPE", "HPE"], ["VRT", "Vertiv"],
+    ["ANET", "Arista"], ["PSTG", "Pure Storage"], ["CRDO", "Credo"], ["ALAB", "Astera Labs"],
+    ["MOD", "Modine"],
+  ]},
+  { name: "電線・ケーブル", icon: "🔌", stocks: [
+    ["PRYMY", "Prysmian"], ["BDC", "Belden"], ["GLW", "Corning(光ファイバー)"],
+    ["APH", "Amphenol"], ["NVT", "nVent"], ["ATKR", "Atkore"],
+  ]},
+  { name: "精密機器", icon: "🎯", stocks: [
+    ["KEYS", "Keysight(電子計測)"], ["TER", "Teradyne(半導体テスタ)"], ["TDY", "Teledyne"],
+    ["FTV", "Fortive"], ["AME", "Ametek"], ["MTD", "Mettler-Toledo(精密計量)"],
+    ["TRMB", "Trimble(精密測位)"], ["CGNX", "Cognex(マシンビジョン)"], ["GRMN", "Garmin"],
+  ]},
+  { name: "化合物半導体(米国)", icon: "💠", stocks: [
+    ["WOLF", "Wolfspeed(SiC)"], ["NVTS", "Navitas(GaN)"], ["ON", "onsemi(SiC)"], ["COHR", "Coherent"],
+  ]},
+  { name: "フォトレジスト(米国)", icon: "🧪", stocks: [
+    ["DD", "DuPont"], ["ENTG", "Entegris"],
+  ]},
+  { name: "フォトマスク(米国)", icon: "🎭", stocks: [
+    ["PLAB", "Photronics"],
+  ]},
+  { name: "半導体ガス(米国)", icon: "🫧", stocks: [
+    ["APD", "Air Products"], ["LIN", "Linde"],
+  ]},
+  { name: "CMPスラリー(米国)", icon: "🪨", stocks: [
+    ["ENTG", "Entegris"], ["DD", "DuPont"],
+  ]},
+  { name: "スパッタターゲット(米国)", icon: "🎯", stocks: [
+    ["MTRN", "Materion"],
+  ]},
+  { name: "水晶デバイス(米国)", icon: "⏱️", stocks: [
+    ["SITM", "SiTime"],
+  ]},
+  { name: "インダクタ・抵抗器(米国)", icon: "〰️", stocks: [
+    ["VSH", "Vishay"], ["LFUS", "Littelfuse"],
+  ]},
+  // ===== 🇯🇵 日本 =====
+  { name: "ファブレス・設計(日本)", icon: "✏️", stocks: [
+    ["6723.T", "ルネサス"], ["6526.T", "ソシオネクスト"],
+  ]},
+  { name: "製造装置（日本）", icon: "🗾", stocks: [
+    ["8035.T", "東京エレク"], ["6920.T", "レーザーテック"], ["6857.T", "アドバンテスト"],
+    ["6525.T", "KOKUSAIエレク"],
+    ["7731.T", "ニコン"], ["6146.T", "ディスコ"], ["6728.T", "アルバック"], ["6315.T", "TOWA"],
+    ["7729.T", "東京精密"], ["6951.T", "日本電子"], ["6080.T", "ハーモニック"],
+    ["7701.T", "島津製作所"], ["7735.T", "SCREEN"], ["6890.T", "フェローテック"],
+    ["6327.T", "北川精機"],
+  ]},
+  { name: "メモリ・ストレージ(日本)", icon: "💾", stocks: [
+    ["285A.T", "キオクシア"], ["3436.T", "SUMCO"],
+  ]},
+  { name: "アナログ・電源IC(日本)", icon: "🔌", stocks: [
+    ["6963.T", "ローム"],
+  ]},
+  { name: "パワー・SiC/GaN(日本)", icon: "⚡", stocks: [
+    ["6963.T", "ローム"], ["6504.T", "富士電機"], ["6707.T", "サンケン電気"],
+    ["6502.T", "東芝"], ["6594.T", "ニデック"],
+  ]},
+  { name: "通信・RF(日本)", icon: "📶", stocks: [
+    ["6963.T", "ローム"], ["6762.T", "TDK"],
+  ]},
+  { name: "光通信・フォトニクス(日本)", icon: "💡", stocks: [
+    ["5802.T", "住友電工"], ["6965.T", "浜松ホト"], ["6841.T", "横河電機"], ["7741.T", "HOYA"],
   ]},
   { name: "半導体材料(日本)", icon: "🧪", stocks: [
     ["4063.T", "信越化学"], ["4091.T", "日本酸素"], ["5201.T", "AGC"],
@@ -1234,66 +1279,36 @@ const SEMI_GROUPS = [
     ["6752.T", "パナソニック"], ["6997.T", "日本ケミコン"], ["6996.T", "ニチコン"],
     ["6994.T", "指月電機"], ["6989.T", "北陸電気工業"],
   ]},
-  { name: "MLCC・コンデンサ(海外)", icon: "🔲", stocks: [
-    ["VSH", "Vishay(米)"], ["2327.TW", "ヤゲオ(台)"], ["2492.TW", "Walsin(台)"],
-    ["009150.KS", "サムスン電機(韓)"],
-  ]},
   { name: "電子部品（日本）", icon: "🔧", stocks: [
     ["6981.T", "村田製作所"], ["6762.T", "TDK"], ["6976.T", "太陽誘電"], ["6779.T", "日本電波"],
     ["6988.T", "日東電工"], ["6770.T", "アルプスアル"], ["6806.T", "ヒロセ電機"],
     ["6967.T", "新光電気"], ["4062.T", "イビデン"], ["6841.T", "横河電機"],
     ["6724.T", "エプソン"], ["6798.T", "SMK"], ["6995.T", "東海理化"],
+    ["6479.T", "ミネベアミツミ"],
   ]},
   { name: "基板・パッケージ", icon: "🧱", stocks: [
     ["4062.T", "イビデン"], ["6967.T", "新光電気"], ["3105.T", "日清紡"],
     ["3110.T", "日東紡"], ["4216.T", "旭有機材"], ["3402.T", "東レ"],
   ]},
-  { name: "AIサーバー・DC電力(米国)", icon: "🖥️", stocks: [
-    ["SMCI", "Supermicro"], ["DELL", "Dell"], ["HPE", "HPE"], ["VRT", "Vertiv"],
-    ["ANET", "Arista"], ["PSTG", "Pure Storage"], ["CRDO", "Credo"], ["ALAB", "Astera Labs"],
-    ["MOD", "Modine"],
-  ]},
   { name: "AIサーバー・DC電力(日本)", icon: "🖥️", stocks: [
     ["6594.T", "ニデック"], ["6503.T", "三菱電機"],
   ]},
-  { name: "電線・ケーブル", icon: "🔌", stocks: [
-    ["PRYMY", "Prysmian"], ["BDC", "Belden"], ["GLW", "Corning(光ファイバー)"],
-    ["APH", "Amphenol"], ["NVT", "nVent"], ["ATKR", "Atkore"],
-  ]},
-  { name: "精密機器", icon: "🎯", stocks: [
-    ["KEYS", "Keysight(電子計測)"], ["TER", "Teradyne(半導体テスタ)"], ["TDY", "Teledyne"],
-    ["FTV", "Fortive"], ["AME", "Ametek"], ["MTD", "Mettler-Toledo(精密計量)"],
-    ["TRMB", "Trimble(精密測位)"], ["CGNX", "Cognex(マシンビジョン)"], ["GRMN", "Garmin"],
-  ]},
-  // ===== 半導体 材料・部材（前工程） =====
   { name: "シリコンウェーハ", icon: "🥏", stocks: [
     ["4063.T", "信越化学(世界1位)"], ["3436.T", "SUMCO(世界2位)"],
   ]},
   { name: "化合物半導体(日本)", icon: "💠", stocks: [
     ["4004.T", "レゾナック(SiC)"], ["5802.T", "住友電工(GaN基板)"], ["6963.T", "ローム(SiC)"],
   ]},
-  { name: "化合物半導体(米国)", icon: "💠", stocks: [
-    ["WOLF", "Wolfspeed(SiC)"], ["NVTS", "Navitas(GaN)"], ["ON", "onsemi(SiC)"], ["COHR", "Coherent"],
-  ]},
   { name: "フォトレジスト(日本)", icon: "🧪", stocks: [
     ["4186.T", "東京応化"], ["4063.T", "信越化学"], ["4005.T", "住友化学"],
     ["4901.T", "富士フイルム"], ["4970.T", "東洋合成(原料)"],
   ]},
-  { name: "フォトレジスト(米国)", icon: "🧪", stocks: [
-    ["DD", "DuPont"], ["ENTG", "Entegris"],
-  ]},
   { name: "フォトマスク(日本)", icon: "🎭", stocks: [
     ["7912.T", "DNP"], ["7911.T", "TOPPAN"], ["7741.T", "HOYA(ブランクス)"],
-  ]},
-  { name: "フォトマスク(米国)", icon: "🎭", stocks: [
-    ["PLAB", "Photronics"],
   ]},
   { name: "半導体ガス(日本)", icon: "🫧", stocks: [
     ["4091.T", "日本酸素HD"], ["4004.T", "レゾナック"], ["8088.T", "岩谷産業"],
     ["4047.T", "関東電化"], ["4109.T", "ステラケミファ"],
-  ]},
-  { name: "半導体ガス(米国)", icon: "🫧", stocks: [
-    ["APD", "Air Products"], ["LIN", "Linde"],
   ]},
   { name: "超純水・薬液", icon: "💧", stocks: [
     ["6370.T", "栗田工業"], ["6368.T", "オルガノ"], ["4109.T", "ステラケミファ"],
@@ -1301,19 +1316,12 @@ const SEMI_GROUPS = [
   { name: "CMPスラリー(日本)", icon: "🪨", stocks: [
     ["4901.T", "富士フイルム"], ["4004.T", "レゾナック"],
   ]},
-  { name: "CMPスラリー(米国)", icon: "🪨", stocks: [
-    ["ENTG", "Entegris"], ["DD", "DuPont"],
-  ]},
   { name: "スパッタターゲット(日本)", icon: "🎯", stocks: [
     ["5706.T", "三井金属"], ["5016.T", "JX金属"],
-  ]},
-  { name: "スパッタターゲット(米国)", icon: "🎯", stocks: [
-    ["MTRN", "Materion"],
   ]},
   { name: "石英・セラミック部材", icon: "🏺", stocks: [
     ["5334.T", "ニテラ(旧日特陶)"], ["6971.T", "京セラ"], ["5333.T", "日本碍子(NGK)"],
   ]},
-  // ===== 半導体 後工程（組立・パッケージング） =====
   { name: "リードフレーム", icon: "🪆", stocks: [
     ["7912.T", "DNP"],
   ]},
@@ -1326,18 +1334,11 @@ const SEMI_GROUPS = [
   { name: "静電チャック・精密セラミック", icon: "🧲", stocks: [
     ["5334.T", "ニテラ(旧日特陶)"], ["5332.T", "TOTO"], ["6971.T", "京セラ"],
   ]},
-  // ===== 電子部品（実装後に使う部品） =====
   { name: "水晶デバイス(日本)", icon: "⏱️", stocks: [
     ["6971.T", "京セラ"], ["6724.T", "エプソン"], ["6962.T", "大真空"],
   ]},
-  { name: "水晶デバイス(米国)", icon: "⏱️", stocks: [
-    ["SITM", "SiTime"],
-  ]},
   { name: "インダクタ・抵抗器(日本)", icon: "〰️", stocks: [
     ["6976.T", "太陽誘電"], ["6981.T", "村田製作所"], ["6963.T", "ローム"], ["6999.T", "KOA(コーア)"],
-  ]},
-  { name: "インダクタ・抵抗器(米国)", icon: "〰️", stocks: [
-    ["VSH", "Vishay"], ["LFUS", "Littelfuse"],
   ]},
 ];
 
