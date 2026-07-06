@@ -906,6 +906,11 @@ const SECTORS = [
     ["FTV", "Fortive"], ["AME", "Ametek"], ["MTD", "Mettler-Toledo (精密計量)"],
     ["TRMB", "Trimble (精密測位)"], ["CGNX", "Cognex (マシンビジョン)"], ["GRMN", "Garmin"],
   ]},
+  { name: "工作機械・工具", icon: "🏭", stocks: [
+    ["HURC", "Hurco (CNC工作機械)"], ["KMT", "Kennametal (切削工具)"],
+    ["LECO", "Lincoln Electric (溶接)"], ["ITW", "Illinois Tool Works"],
+    ["SNA", "Snap-on (工具)"], ["GGG", "Graco (流体機器)"],
+  ]},
   { name: "テクノロジー", icon: "💻", stocks: [
     ["AAPL", "Apple"], ["MSFT", "Microsoft"], ["NVDA", "NVIDIA"],
     ["AVGO", "Broadcom"], ["ORCL", "Oracle"], ["CRM", "Salesforce"],
@@ -1387,6 +1392,12 @@ const JP_SECTORS = [
   { name: "機械", icon: "⚙️", stocks: [
     ["6301.T", "コマツ"], ["6367.T", "ダイキン工業"], ["6954.T", "ファナック"],
     ["6273.T", "SMC"],
+  ]},
+  { name: "工作機械", icon: "🏭", stocks: [
+    ["6141.T", "DMG森精機"], ["6103.T", "オークマ"], ["6135.T", "牧野フライス"],
+    ["6134.T", "FUJI"], ["6104.T", "芝浦機械"], ["6473.T", "ジェイテクト"],
+    ["6101.T", "ツガミ"], ["6143.T", "ソディック"], ["6136.T", "OSG(切削工具)"],
+    ["6474.T", "不二越"], ["6113.T", "アマダ(板金)"],
   ]},
   { name: "食料品", icon: "🍱", stocks: [
     ["2914.T", "JT"], ["2502.T", "アサヒGHD"], ["2503.T", "キリンHD"],
