@@ -1,0 +1,2 @@
+# 写真解析（Claude API）に使う公式ライブラリ
+anthropic>=0.40.0

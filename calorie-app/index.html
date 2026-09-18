@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>写真でカロリー推定</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <h1>📷 写真でカロリー推定</h1>
+      <p class="lead">食事の写真を選ぶと、AI（Claude）が食べ物とだいたいのカロリーを推定します。</p>
+    </header>
+
+    <!-- 写真を選ぶ -->
+    <section class="card">
+      <label class="picker" for="fileInput">
+        <span class="picker__icon">🍽️</span>
+        <span class="picker__text">写真をえらぶ / 撮影する</span>
+        <!-- capture 属性でスマホならカメラも起動できる -->
+        <input id="fileInput" type="file" accept="image/*" capture="environment" hidden>
+      </label>
+
+      <div id="preview" class="preview" hidden>
+        <img id="previewImg" alt="選んだ写真のプレビュー">
+      </div>
+
+      <button id="analyzeBtn" class="btn btn--primary" disabled>この写真を解析する</button>
+    </section>
+
+    <!-- 結果 -->
+    <section id="status" class="status" hidden></section>
+
+    <section id="result" class="card result" hidden>
+      <div class="total">
+        <span class="total__label">推定合計カロリー</span>
+        <span class="total__value"><span id="totalKcal">0</span> <small>kcal</small></span>
+        <span id="confidence" class="badge"></span>
+      </div>
+      <ul id="itemList" class="items"></ul>
+      <p id="note" class="note"></p>
+      <p class="disclaimer">※ 写真からの推定のため、実際の値とは差が出ます。目安としてご利用ください。</p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

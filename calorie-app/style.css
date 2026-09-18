@@ -1,0 +1,177 @@
+:root {
+  --bg: #f5f7fa;
+  --card: #ffffff;
+  --text: #1f2933;
+  --muted: #7b8794;
+  --primary: #16a34a;
+  --primary-dark: #15803d;
+  --border: #e4e7eb;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN",
+    "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.app {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+/* ヘッダー */
+.hero {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.hero h1 {
+  font-size: 1.6rem;
+  margin: 0 0 6px;
+}
+.lead {
+  color: var(--muted);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* カード共通 */
+.card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+
+/* 写真えらぶボタン */
+.picker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 28px 16px;
+  border: 2px dashed var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.picker:hover {
+  border-color: var(--primary);
+  background: #f0fdf4;
+}
+.picker__icon { font-size: 2.4rem; }
+.picker__text { font-weight: 600; }
+
+/* プレビュー */
+.preview {
+  margin-top: 16px;
+  text-align: center;
+}
+.preview img {
+  max-width: 100%;
+  max-height: 320px;
+  border-radius: 12px;
+}
+
+/* ボタン */
+.btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  margin-top: 16px;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.btn--primary {
+  background: var(--primary);
+  color: #fff;
+}
+.btn--primary:hover:not(:disabled) { background: var(--primary-dark); }
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 状態メッセージ */
+.status {
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+  text-align: center;
+}
+.status--loading { background: #eff6ff; color: #1d4ed8; }
+.status--error { background: #fef2f2; color: #b91c1c; }
+
+/* 結果 */
+.total {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.total__label { color: var(--muted); font-size: 0.9rem; }
+.total__value { font-size: 2.4rem; font-weight: 800; color: var(--primary); }
+.total__value small { font-size: 1rem; color: var(--muted); }
+
+.badge {
+  margin-top: 4px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.badge--high { background: #dcfce7; color: #15803d; }
+.badge--medium { background: #fef9c3; color: #a16207; }
+.badge--low { background: #fee2e2; color: #b91c1c; }
+
+.items {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0 0;
+}
+.item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.item__name { font-weight: 600; }
+.item__qty { color: var(--muted); font-size: 0.85rem; }
+.item__kcal {
+  grid-row: 1 / 3;
+  grid-column: 2;
+  align-self: center;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.item--empty { color: var(--muted); text-align: center; display: block; }
+
+.note {
+  margin: 14px 0 0;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #475569;
+}
+.disclaimer {
+  margin: 12px 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+}
