@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>補助金ウォッチ</title>
+  <meta name="theme-color" content="#0f5132" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="stylesheet" href="style.css?v=1" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>🌱 補助金ウォッチ</h1>
+    <p class="sub">淡路島の 農業・飲食・宿泊 むけ</p>
+  </header>
+
+  <nav class="tabs">
+    <button data-tab="list" class="active">一覧</button>
+    <button data-tab="new">新着 <span id="newBadge" class="badge" hidden>0</span></button>
+    <button data-tab="sources">情報源</button>
+    <button data-tab="report">週次レポート</button>
+    <button data-tab="settings">設定</button>
+  </nav>
+
+  <main>
+    <!-- 一覧 -->
+    <section id="tab-list" class="tab-panel active">
+      <div class="toolbar">
+        <button id="addBtn" class="primary">＋ 補助金を登録</button>
+        <select id="filterCat">
+          <option value="">すべての分野</option>
+          <option value="農業">農業</option>
+          <option value="飲食">飲食</option>
+          <option value="宿泊">宿泊</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+      <p class="hint">締切が近い順に並びます。締切が近いものは色でお知らせします。</p>
+      <div id="listArea"></div>
+    </section>
+
+    <!-- 新着（自動検知） -->
+    <section id="tab-new" class="tab-panel">
+      <p class="hint">情報源の公式ページに出た「補助金っぽい新着リンク」です。
+        <b>中身・金額・締切は必ずリンク先の公式ページで確認</b>してから「登録」してください。</p>
+      <div id="newArea"></div>
+    </section>
+
+    <!-- 情報源 -->
+    <section id="tab-sources" class="tab-panel">
+      <p class="hint">定期的に見にいく公式ページです。ここを増やすほど新着を拾えます。
+        （市役所・県・商工会議所などの「事業者向け」ページがおすすめ）</p>
+      <div id="sourcesArea"></div>
+      <div class="row">
+        <input id="srcName" placeholder="名前（例：淡路市 産業振興課）" />
+        <input id="srcUrl" placeholder="https://..." />
+        <button id="addSrcBtn" class="primary">追加</button>
+      </div>
+      <button id="saveSrcBtn" class="secondary">情報源を保存</button>
+      <button id="checkNowBtn" class="secondary">今すぐチェック</button>
+      <p id="srcMsg" class="msg"></p>
+    </section>
+
+    <!-- 週次レポート -->
+    <section id="tab-report" class="tab-panel">
+      <p class="hint">今週の新規確認ぶんと、締切が近い補助金をまとめた文章です。
+        コピーして note やスプレッドシートに貼れます。</p>
+      <button id="genReportBtn" class="primary">レポートを作る</button>
+      <button id="copyReportBtn" class="secondary">コピー</button>
+      <textarea id="reportText" rows="18" readonly placeholder="「レポートを作る」を押してください"></textarea>
+    </section>
+
+    <!-- 設定 -->
+    <section id="tab-settings" class="tab-panel">
+      <h3>通知（締切・新着のお知らせ）</h3>
+      <p class="hint">スマホのホーム画面に追加してから通知をオンにすると、
+        アプリを閉じていても締切・新着を知らせます。</p>
+      <button id="notifBtn" class="primary">通知をオンにする</button>
+      <button id="notifTestBtn" class="secondary">テスト通知</button>
+      <p id="notifMsg" class="msg"></p>
+      <hr />
+      <h3>このアプリについて</h3>
+      <p class="hint">
+        ⚠️ 申請書類の作成代行は行政書士の仕事です。このアプリは
+        <b>情報の整理と提供だけ</b>に使ってください。<br />
+        ⚠️ 金額・締切の間違いは信用問題です。必ず公式リンクで確認し、確認日を残しましょう。
+      </p>
+    </section>
+  </main>
+
+  <!-- 登録・編集フォーム -->
+  <div id="modal" class="modal" hidden>
+    <div class="modal-box">
+      <h3 id="modalTitle">補助金を登録</h3>
+      <label>名称 <span class="req">必須</span>
+        <input id="f-name" />
+      </label>
+      <label>公式リンク（URL） <span class="req">必須</span>
+        <input id="f-url" placeholder="https://..." />
+        <button id="draftBtn" type="button" class="tiny">リンクから要約の下書き</button>
+      </label>
+      <label>分野
+        <select id="f-category">
+          <option>農業</option><option>飲食</option><option>宿泊</option>
+          <option selected>その他</option>
+        </select>
+      </label>
+      <label>対象者 <input id="f-target" placeholder="例：市内の個人事業主" /></label>
+      <label>上限額 <input id="f-maxAmount" placeholder="例：100万円" /></label>
+      <label>締切 <input id="f-deadline" type="date" /></label>
+      <label>3行要約 <textarea id="f-summary" rows="4"></textarea></label>
+      <label>確認日 <input id="f-checkedOn" type="date" /></label>
+      <label>メモ <input id="f-note" /></label>
+      <input id="f-id" type="hidden" />
+      <p id="formMsg" class="msg"></p>
+      <div class="modal-actions">
+        <button id="saveBtn" class="primary">保存</button>
+        <button id="cancelBtn" class="secondary">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=1"></script>
+</body>
+</html>

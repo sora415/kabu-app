@@ -1,0 +1,12 @@
+# 秘密鍵・購読データ・登録データ・ログ（公開リポジトリに上げない）
+vapid_keys.json
+subscriptions.json
+subsidies.json
+sources.json
+new_items.json
+source_state.json
+reminded.json
+server.log
+__pycache__/
+*.pyc
+.DS_Store
