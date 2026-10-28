@@ -116,6 +116,7 @@ hr { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
   position: fixed; inset: 0; background: rgba(0,0,0,.4);
   display: flex; align-items: flex-end; justify-content: center; z-index: 20;
 }
+.modal[hidden] { display: none; }
 .modal-box {
   background: #fff; width: 100%; max-width: 560px; border-radius: 16px 16px 0 0;
   padding: 18px; max-height: 92vh; overflow-y: auto;
