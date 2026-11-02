@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  :root { color-scheme: light; padding: env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px); }
+  html, body { margin: 0; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<title>きせつ観光ナビ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+  /* レイアウト: 縦1カラム。入力パネル→スポット→ご飯の順。和風トラベル */
+  :root {
+    --bg: #f4efe6;
+    --surface: #fffdf8;
+    --ink: #2b2a26;
+    --ink-soft: #6f6a60;
+    --line: #e4dccd;
+    --accent: #1f4e6b;        /* 藍色 */
+    --accent-soft: #e7eef2;
+    --food: #b5432f;          /* ご飯セクションの朱色 */
+    --food-soft: #f6e7e2;
+    --spring: #d6678b;
+    --summer: #2a9d8f;
+    --autumn: #c96a2a;
+    --winter: #3f72af;
+    --shadow: 0 1px 2px rgba(43,42,38,.06), 0 8px 24px rgba(43,42,38,.07);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1a1916; --surface: #24231f; --ink: #efe9dc; --ink-soft: #a9a294;
+      --line: #38362f; --accent: #7fb4d4; --accent-soft: #223240;
+      --food: #e08466; --food-soft: #3a2824;
+      --spring: #e488a6; --summer: #4fc0b2; --autumn: #e08b4e; --winter: #6f9bd8;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1a1916; --surface: #24231f; --ink: #efe9dc; --ink-soft: #a9a294;
+    --line: #38362f; --accent: #7fb4d4; --accent-soft: #223240;
+    --food: #e08466; --food-soft: #3a2824;
+    --spring: #e488a6; --summer: #4fc0b2; --autumn: #e08b4e; --winter: #6f9bd8;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: "Zen Kaku Gothic New", system-ui, sans-serif; line-height: 1.7; }
+  .wrap {
+    max-width: 780px; margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 28px 56px;
+  }
+
+  header { text-align: center; margin-bottom: 24px; }
+  .eyebrow { font-size: .8rem; letter-spacing: .22em; color: var(--accent); font-weight: 700; margin: 0 0 8px; }
+  h1 { font-family: "Shippori Mincho", serif; font-weight: 700; font-size: clamp(1.9rem, 6vw, 2.6rem); margin: 0; text-wrap: balance; letter-spacing: .02em; }
+  .lead { color: var(--ink-soft); margin: 10px 0 0; font-size: .96rem; }
+
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 22px; display: grid; gap: 16px; }
+  .field { display: grid; gap: 7px; }
+  label { font-weight: 700; font-size: .92rem; }
+  .hint { font-weight: 400; color: var(--ink-soft); font-size: .82rem; }
+  select, input[type="date"], input[type="text"] {
+    font: inherit; color: var(--ink); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 10px; padding: 12px 13px; width: 100%;
+  }
+  select:focus-visible, input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .row { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 460px) { .row { grid-template-columns: 1fr; } }
+
+  button.go { font: inherit; font-weight: 700; font-size: 1.02rem; color: #fff; background: var(--accent); border: none; border-radius: 10px; padding: 14px; cursor: pointer; transition: filter .15s ease, transform .05s ease; }
+  button.go:hover { filter: brightness(1.08); }
+  button.go:active { transform: translateY(1px); }
+
+  .result { margin-top: 32px; }
+  .result-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; margin-bottom: 4px; }
+  .result-head h2 { font-family: "Shippori Mincho", serif; font-size: 1.5rem; margin: 0; font-weight: 700; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; }
+  .chip-tag { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; font-weight: 700; padding: 4px 11px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+  .result-note { color: var(--ink-soft); font-size: .9rem; margin: 6px 0 16px; }
+
+  /* カテゴリしぼりこみ */
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .filters button {
+    font: inherit; font-size: .85rem; font-weight: 700; cursor: pointer;
+    padding: 6px 13px; border-radius: 999px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--ink-soft);
+  }
+  .filters button[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .cards { display: grid; gap: 14px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--seasonc, var(--line)); border-radius: 14px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .card-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .card h3 { font-family: "Shippori Mincho", serif; font-size: 1.18rem; margin: 0; font-weight: 700; min-width: 0; }
+  .badge { font-size: .74rem; font-weight: 700; letter-spacing: .04em; padding: 3px 9px; border-radius: 999px; color: #fff; background: var(--seasonc, var(--ink-soft)); white-space: nowrap; }
+  .badge.cat { color: var(--ink-soft); background: transparent; border: 1px solid var(--line); }
+  .pick { font-size: .74rem; font-weight: 700; color: var(--accent); background: var(--accent-soft); padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .pick.rain { color: #fff; background: var(--winter); }
+  .card p { margin: 0; color: var(--ink); font-size: .95rem; }
+  .card .why { margin-top: 7px; color: var(--ink-soft); font-size: .86rem; }
+
+  /* ご飯セクション */
+  .food-sec { margin-top: 34px; background: var(--food-soft); border: 1px solid var(--line); border-radius: 18px; padding: 22px 20px; }
+  .food-head { display: flex; align-items: center; gap: 10px; margin: 0 0 4px; }
+  .food-head h2 { font-family: "Shippori Mincho", serif; font-size: 1.45rem; margin: 0; font-weight: 700; color: var(--food); }
+  .food-sub { color: var(--ink-soft); font-size: .88rem; margin: 0 0 16px; }
+  .food-grid { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 520px) { .food-grid { grid-template-columns: 1fr; } }
+  .food-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 15px; display: flex; flex-direction: column; gap: 5px; }
+  .food-card .ftop { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+  .food-card h4 { font-family: "Shippori Mincho", serif; font-size: 1.08rem; margin: 0; font-weight: 700; min-width: 0; }
+  .ftag { font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--food); color: #fff; white-space: nowrap; }
+  .fshun { font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--food-soft); color: var(--food); border: 1px solid var(--food); white-space: nowrap; }
+  .food-card p { font-size: .9rem; color: var(--ink); margin: 0; }
+
+  .empty { text-align: center; color: var(--ink-soft); padding: 36px 16px; border: 1px dashed var(--line); border-radius: 14px; background: var(--surface); }
+  footer { margin-top: 42px; text-align: center; color: var(--ink-soft); font-size: .8rem; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">きせつ観光ナビ</p>
+    <h1>どこへ行こう？</h1>
+    <p class="lead">行き先・日にち・天気を選ぶと、その季節にぴったりの観光スポットと、ご当地グルメを教えます。</p>
+  </header>
+
+  <form class="panel" id="form">
+    <div class="field">
+      <label for="pref">都道府県<span class="hint">　全国47都道府県から</span></label>
+      <select id="pref" name="pref" required>
+        <option value="" selected disabled>選んでください</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="date">日にち<span class="hint">　季節に反映</span></label>
+        <input type="date" id="date" name="date" required>
+      </div>
+      <div class="field">
+        <label for="weather">天気<span class="hint">　雨・雪なら屋内を優先</span></label>
+        <select id="weather" name="weather">
+          <option value="">おまかせ（季節だけで判断）</option>
+          <option value="sunny">☀️ 晴れ</option>
+          <option value="cloudy">☁️ くもり</option>
+          <option value="rainy">🌧️ 雨</option>
+          <option value="snowy">❄️ 雪</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="place">地名（任意）<span class="hint">　例：清水、箱根、宮島</span></label>
+      <input type="text" id="place" name="place" placeholder="空欄でもOK" autocomplete="off">
+    </div>
+
+    <button type="submit" class="go">おすすめを見る</button>
+  </form>
+
+  <section class="result" id="result" hidden aria-live="polite"></section>
+
+  <footer>
+    掲載スポット・グルメは代表的なものを手作業でまとめたものです。<br>
+    お出かけ前に、現地の最新情報・開館時間・旬の時期をご確認ください。
+  </footer>
+</div>
+
+<script>
+// ============================================================
+// 季節の定義
+// ============================================================
+const SEASONS = {
+  spring: { label: "春", months: [3,4,5],   color: "var(--spring)", note: "桜や新緑が気持ちいい季節" },
+  summer: { label: "夏", months: [6,7,8],   color: "var(--summer)", note: "海・お祭り・涼しい高原がおすすめ" },
+  autumn: { label: "秋", months: [9,10,11], color: "var(--autumn)", note: "紅葉や味覚狩りが楽しい季節" },
+  winter: { label: "冬", months: [12,1,2],  color: "var(--winter)", note: "雪景色・温泉・あったかグルメの季節" },
+};
+function seasonOf(month) {
+  for (const key in SEASONS) if (SEASONS[key].months.includes(month)) return key;
+  return "spring";
+}
+
+// ============================================================
+// データ  ★増やし方★
+//   新しい県を足す  → DATA に "県名": { spots:[...], foods:[...] } を追加
+//   スポットを足す  → その県の spots:[] に { } を1つ追加
+//     name:見出し / cat:カテゴリ(しぼりこみに自動で出ます) / season:"spring"等 or "all"(通年)
+//     in:true=屋内や雨でも楽しめる / desc:説明 / why:ひとこと
+//   ご飯を足す      → その県の foods:[] に { } を1つ追加
+//     name:料理名 / tag:ジャンル / desc:説明 / season:(旬があれば)"winter"等
+// ============================================================
+const DATA = {
+  "北海道": { spots:[
+    { name:"函館山の夜景", cat:"夜景", season:"all", in:false, desc:"日本三大夜景のひとつ。ロープウェイで山頂へ。", why:"一年を通して楽しめる定番。" },
+    { name:"富良野のラベンダー畑", cat:"自然", season:"summer", in:false, desc:"紫のじゅうたんが地平線まで続く。", why:"見頃は7月。夏にこそ訪れたい絶景。" },
+    { name:"小樽運河", cat:"まち歩き", season:"winter", in:false, desc:"ガス灯と雪が似合うレトロな運河。", why:"冬は雪あかりの路が格別。" },
+    { name:"旭山動物園", cat:"おでかけ", season:"all", in:true, desc:"動物の自然な姿が見られる人気の動物園。", why:"屋内展示も多く天気を問わず。冬はペンギン散歩も。" },
+    { name:"白い恋人パーク", cat:"おでかけ", season:"all", in:true, desc:"お菓子づくり体験ができる屋内施設。", why:"雨や雪の日でも一日楽しめる。" },
+  ], foods:[
+    { name:"札幌味噌ラーメン", tag:"麺", desc:"濃厚な味噌スープに縮れ麺。バターとコーンを乗せても。" },
+    { name:"海鮮丼・寿司", tag:"海鮮", desc:"ウニ・イクラ・カニが山盛り。市場で食べる朝ごはんは格別。" },
+    { name:"ジンギスカン", tag:"肉", desc:"ジンギスカン鍋で焼くラム肉。たっぷりの野菜と一緒に。" },
+    { name:"スープカレー", tag:"カレー", desc:"スパイスの効いたサラサラのスープに大きな野菜がごろり。" },
+    { name:"毛ガニ", tag:"海鮮", season:"winter", desc:"身がぎっしり、濃厚なカニ味噌。冬の味覚の王様。" },
+  ]},
+  "青森県": { spots:[
+    { name:"弘前公園の桜", cat:"自然", season:"spring", in:false, desc:"お城と約2600本の桜が織りなす名所。", why:"4月下旬〜GWが見頃。春の必見。" },
+    { name:"奥入瀬渓流", cat:"自然", season:"autumn", in:false, desc:"滝と渓流が続く散策路。", why:"紅葉の名所。秋の彩りが見事。" },
+    { name:"青森ねぶた祭", cat:"祭り", season:"summer", in:false, desc:"大型の灯籠が街を練り歩く夏祭り。", why:"8月上旬開催。夏の東北を代表する祭り。" },
+    { name:"三内丸山遺跡", cat:"歴史", season:"all", in:true, desc:"縄文時代の大規模集落跡。世界遺産。", why:"屋内展示もあり天候を問わず学べる。" },
+  ], foods:[
+    { name:"大間のマグロ", tag:"海鮮", desc:"本州最北で揚がる本マグロ。とろける大トロは絶品。" },
+    { name:"のっけ丼", tag:"海鮮", desc:"市場で好きな具を選んでのせる、自分だけの海鮮丼。" },
+    { name:"味噌カレー牛乳ラーメン", tag:"麺", desc:"味噌・カレー・牛乳が合わさった青森のご当地麺。" },
+    { name:"りんご", tag:"フルーツ", season:"autumn", desc:"生産量日本一。秋はもぎたての蜜入りが味わえる。" },
+  ]},
+  "岩手県": { spots:[
+    { name:"中尊寺金色堂", cat:"歴史", season:"all", in:true, desc:"金色に輝くお堂。世界遺産・平泉の中心。", why:"覆堂の中なので雨でも拝観できる。" },
+    { name:"浄土ヶ浜", cat:"景色", season:"summer", in:false, desc:"白い岩と青い海のコントラストが美しい海岸。", why:"夏は遊覧船やウミネコ観察が楽しい。" },
+    { name:"龍泉洞", cat:"自然", season:"all", in:true, desc:"透き通る地底湖で知られる鍾乳洞。", why:"洞内は一年中ひんやり。天気を問わず。" },
+    { name:"小岩井農場", cat:"おでかけ", season:"spring", in:false, desc:"岩手山を望む広大な牧場。", why:"新緑の春〜初夏が気持ちいい。" },
+  ], foods:[
+    { name:"わんこそば", tag:"麺", desc:"給仕さんが次々とそばを足してくれる、食べ比べが楽しい名物。" },
+    { name:"盛岡冷麺", tag:"麺", desc:"コシの強い透明な麺に、キムチと果物のさっぱりスープ。" },
+    { name:"じゃじゃ麺", tag:"麺", desc:"平打ち麺に肉味噌ときゅうり。最後は卵スープで締める。" },
+    { name:"前沢牛", tag:"肉", desc:"きめ細かな霜降りのブランド和牛。とろける食感。" },
+  ]},
+  "宮城県": { spots:[
+    { name:"松島", cat:"景色", season:"all", in:false, desc:"大小の島々が浮かぶ日本三景。", why:"遊覧船で巡れ、四季それぞれ美しい。" },
+    { name:"瑞巌寺", cat:"歴史", season:"all", in:true, desc:"伊達政宗ゆかりの古刹。", why:"堂内拝観で雨でも楽しめる。" },
+    { name:"蔵王のお釜", cat:"自然", season:"summer", in:false, desc:"エメラルドグリーンの火口湖。", why:"道路が開く夏が見頃。" },
+    { name:"仙台光のページェント", cat:"夜景", season:"winter", in:false, desc:"けやき並木がきらめく冬の風物詩。", why:"12月の夜のおでかけに。" },
+  ], foods:[
+    { name:"牛タン焼き", tag:"肉", desc:"厚切りで肉厚、炭火で香ばしく。麦飯とテールスープが定番。" },
+    { name:"ずんだ餅", tag:"スイーツ", desc:"すり潰した枝豆の餡をまとった、鮮やかな緑のお餅。" },
+    { name:"笹かまぼこ", tag:"練り物", desc:"笹の形の上品なかまぼこ。焼きたてはふんわり。" },
+    { name:"牡蠣", tag:"海鮮", season:"winter", desc:"三陸の濃厚な牡蠣。焼き・蒸し・生、どれも絶品。" },
+  ]},
+  "秋田県": { spots:[
+    { name:"角館の武家屋敷", cat:"まち歩き", season:"spring", in:false, desc:"黒板塀にしだれ桜が映える「みちのくの小京都」。", why:"桜の春がとりわけ美しい。" },
+    { name:"田沢湖", cat:"景色", season:"all", in:false, desc:"日本一深い瑠璃色の湖。", why:"湖畔のたつこ像とともに通年楽しめる。" },
+    { name:"乳頭温泉郷", cat:"温泉", season:"winter", in:true, desc:"山あいの秘湯が集まる温泉郷。", why:"雪見の露天風呂は冬の醍醐味。" },
+    { name:"なまはげ館", cat:"歴史", season:"all", in:true, desc:"男鹿のなまはげ文化を学べる施設。", why:"屋内なので天気を問わない。" },
+  ], foods:[
+    { name:"きりたんぽ鍋", tag:"鍋", season:"winter", desc:"つぶしたご飯の棒を比内地鶏の出汁でぐつぐつ。冬の定番。" },
+    { name:"稲庭うどん", tag:"麺", desc:"手延べの細くつるりとしたうどん。のど越し抜群。" },
+    { name:"比内地鶏", tag:"肉", desc:"日本三大地鶏のひとつ。うまみの濃い出汁と歯ごたえ。" },
+    { name:"ハタハタ", tag:"海鮮", season:"winter", desc:"冬の秋田を代表する魚。しょっつる鍋や焼きで。" },
+  ]},
+  "山形県": { spots:[
+    { name:"山寺(立石寺)", cat:"歴史", season:"autumn", in:false, desc:"千段超の石段の上に建つ絶景の古刹。", why:"紅葉に包まれる秋が見事。" },
+    { name:"銀山温泉", cat:"温泉", season:"winter", in:true, desc:"ガス灯と木造旅館が並ぶ大正ロマンの温泉街。", why:"雪景色に灯りが灯る冬が幻想的。" },
+    { name:"蔵王樹氷", cat:"自然", season:"winter", in:false, desc:"樹氷(スノーモンスター)が広がる雪原。", why:"冬だけ見られる自然の造形。" },
+    { name:"羽黒山五重塔", cat:"歴史", season:"all", in:false, desc:"杉並木の中に立つ国宝の塔。", why:"荘厳な杉木立は通年の見どころ。" },
+  ], foods:[
+    { name:"米沢牛", tag:"肉", desc:"甘みのある上質な霜降り。すき焼きやステーキで。" },
+    { name:"芋煮", tag:"鍋", season:"autumn", desc:"里芋・牛肉・こんにゃくの鍋。秋は河原で芋煮会。" },
+    { name:"山形そば", tag:"麺", desc:"太くてコシのある田舎そば。板そばでどうぞ。" },
+    { name:"さくらんぼ", tag:"フルーツ", season:"summer", desc:"初夏が旬の佐藤錦。ルビー色の宝石のような甘さ。" },
+  ]},
+  "福島県": { spots:[
+    { name:"鶴ヶ城(会津若松)", cat:"歴史", season:"spring", in:true, desc:"赤瓦が美しい名城。天守は資料館に。", why:"春は桜に包まれ、天守内は雨でも見学可。" },
+    { name:"五色沼", cat:"自然", season:"autumn", in:false, desc:"色とりどりに輝く湖沼群の散策路。", why:"紅葉と水面の色が映える秋に。" },
+    { name:"大内宿", cat:"まち歩き", season:"winter", in:false, desc:"茅葺き屋根の宿場町。", why:"雪化粧した家並みが美しい。" },
+    { name:"スパリゾートハワイアンズ", cat:"おでかけ", season:"all", in:true, desc:"一年中常夏の屋内プール&温泉。", why:"天気を問わず遊べる屋内リゾート。" },
+  ], foods:[
+    { name:"喜多方ラーメン", tag:"麺", desc:"平打ち熟成麺にあっさり醤油。朝ラーの文化も。" },
+    { name:"円盤餃子", tag:"中華", desc:"フライパンの形に円く並べて焼く、福島名物の餃子。" },
+    { name:"ソースカツ丼", tag:"丼", desc:"甘辛いソースにくぐらせたカツをご飯の上に。" },
+    { name:"桃", tag:"フルーツ", season:"summer", desc:"夏が旬。あふれる果汁ととろける甘さ。" },
+  ]},
+  "茨城県": { spots:[
+    { name:"国営ひたち海浜公園", cat:"自然", season:"spring", in:false, desc:"丘一面を染めるネモフィラの青。", why:"4月下旬〜5月上旬の青の絶景。秋はコキア。" },
+    { name:"偕楽園", cat:"自然", season:"spring", in:false, desc:"日本三名園のひとつ。約3000本の梅。", why:"梅まつりの早春が見頃。" },
+    { name:"牛久大仏", cat:"歴史", season:"all", in:true, desc:"高さ120mの世界最大級の青銅大仏。胎内にも入れる。", why:"内部拝観で雨でも楽しめる。" },
+    { name:"袋田の滝", cat:"自然", season:"autumn", in:false, desc:"四段に流れ落ちる大滝。", why:"紅葉の秋、凍結する冬も見もの。" },
+  ], foods:[
+    { name:"あんこう鍋", tag:"鍋", season:"winter", desc:"冬の味覚。濃厚なあん肝入りの鍋で体の芯から温まる。" },
+    { name:"水戸納豆", tag:"郷土", desc:"ねばりと香りが自慢。ご飯のお供の王道。" },
+    { name:"常陸牛", tag:"肉", desc:"きめ細かな霜降りのブランド牛。" },
+    { name:"メロン", tag:"フルーツ", season:"summer", desc:"生産量日本一。みずみずしく濃厚な甘み。" },
+  ]},
+  "栃木県": { spots:[
+    { name:"日光東照宮", cat:"歴史", season:"all", in:false, desc:"きらびやかな彫刻が見事な世界遺産。", why:"杉並木とともに通年の名所。" },
+    { name:"華厳の滝", cat:"自然", season:"autumn", in:false, desc:"落差97mの豪快な滝。", why:"紅葉に彩られる秋が特に美しい。" },
+    { name:"あしかがフラワーパーク", cat:"自然", season:"spring", in:false, desc:"大藤の花が滝のように咲き誇る。", why:"4月下旬〜5月の藤、冬は光の花も。" },
+    { name:"那須どうぶつ王国", cat:"おでかけ", season:"all", in:true, desc:"屋内外で動物とふれあえる。", why:"屋内エリアもあり天気を問わない。" },
+  ], foods:[
+    { name:"宇都宮餃子", tag:"中華", desc:"野菜たっぷりであっさり。何個でも食べられる餃子の街。" },
+    { name:"佐野ラーメン", tag:"麺", desc:"手打ちの平打ち麺にあっさり醤油スープ。" },
+    { name:"ゆば料理", tag:"郷土", desc:"日光名物のゆば。刺身や煮物で上品な味わい。" },
+    { name:"とちおとめ", tag:"フルーツ", season:"winter", desc:"冬〜春が旬のいちご。甘くて果汁たっぷり。" },
+  ]},
+  "群馬県": { spots:[
+    { name:"草津温泉・湯畑", cat:"温泉", season:"winter", in:true, desc:"湯けむり立ちのぼる日本有数の名湯。", why:"冬は雪見の湯もみと湯畑が格別。" },
+    { name:"富岡製糸場", cat:"歴史", season:"all", in:true, desc:"明治の近代化を伝える世界遺産。", why:"屋内見学で天気を問わない。" },
+    { name:"吹割の滝", cat:"自然", season:"autumn", in:false, desc:"東洋のナイアガラと呼ばれる迫力の滝。", why:"紅葉の秋が見頃。" },
+    { name:"伊香保温泉・石段街", cat:"温泉", season:"autumn", in:true, desc:"365段の石段に温泉街が連なる。", why:"周囲の紅葉と湯めぐりを秋に。" },
+  ], foods:[
+    { name:"水沢うどん", tag:"麺", desc:"コシと透明感のある、日本三大うどんのひとつ。" },
+    { name:"焼きまんじゅう", tag:"スイーツ", desc:"甘い味噌だれを塗って焼いた、ふわふわの群馬名物。" },
+    { name:"下仁田ネギ", tag:"郷土", season:"winter", desc:"冬が旬。加熱すると驚くほど甘くとろける。すき焼きに。" },
+    { name:"こんにゃく料理", tag:"郷土", desc:"生産量日本一。刺身や田楽でヘルシーに。" },
+  ]},
+  "埼玉県": { spots:[
+    { name:"川越の蔵造りの町並み", cat:"まち歩き", season:"all", in:false, desc:"「小江戸」と呼ばれるレトロな通り。時の鐘が目印。", why:"食べ歩きが通年楽しい。" },
+    { name:"鉄道博物館", cat:"おでかけ", season:"all", in:true, desc:"実物車両がずらり並ぶ屋内博物館。", why:"雨でも一日中楽しめる。" },
+    { name:"羊山公園の芝桜", cat:"自然", season:"spring", in:false, desc:"丘を染めるピンクと白の芝桜。", why:"4月中旬〜5月上旬が見頃。" },
+    { name:"長瀞ライン下り", cat:"おでかけ", season:"summer", in:false, desc:"渓谷を舟で下る涼やかな川遊び。", why:"夏の暑い日にぴったり。秋は紅葉も。" },
+  ], foods:[
+    { name:"川越のうなぎ", tag:"丼", desc:"城下町で愛されてきた、香ばしいうな重。" },
+    { name:"武蔵野うどん", tag:"麺", desc:"太くコシの強い麺を、肉汁つけ汁でいただく。" },
+    { name:"十万石まんじゅう", tag:"スイーツ", desc:"白あんとやまいも入り生地の、やさしい甘さの銘菓。" },
+    { name:"草加せんべい", tag:"スイーツ", desc:"かたく香ばしい、醤油の効いた名物せんべい。" },
+  ]},
+  "千葉県": { spots:[
+    { name:"東京ディズニーリゾート", cat:"おでかけ", season:"all", in:false, desc:"言わずと知れた夢の国。", why:"季節ごとのイベントが充実。" },
+    { name:"鴨川シーワールド", cat:"おでかけ", season:"all", in:true, desc:"シャチのショーが人気の水族館。", why:"屋内施設も多く天気を問わない。" },
+    { name:"成田山新勝寺", cat:"歴史", season:"all", in:false, desc:"参道のグルメも楽しい大本山。", why:"初詣など通年にぎわう。" },
+    { name:"濃溝の滝", cat:"自然", season:"summer", in:false, desc:"ハート型の光が差し込む幻想的な滝。", why:"緑あふれる初夏〜夏が美しい。" },
+  ], foods:[
+    { name:"なめろう", tag:"海鮮", desc:"房総の漁師めし。アジを味噌とたたいた旨みたっぷりの一品。" },
+    { name:"勝浦タンタンメン", tag:"麺", desc:"ラー油の真っ赤なスープに玉ねぎたっぷりの辛うま麺。" },
+    { name:"落花生", tag:"郷土", desc:"生産量日本一。ゆで落花生のほくほく感が格別。" },
+    { name:"びわ", tag:"フルーツ", season:"summer", desc:"初夏が旬の南房総のびわ。上品な甘さ。" },
+  ]},
+  "東京都": { spots:[
+    { name:"浅草・雷門と仲見世", cat:"まち歩き", season:"all", in:false, desc:"東京下町の定番。食べ歩きも楽しい。", why:"いつでも賑わう鉄板スポット。" },
+    { name:"目黒川の桜並木", cat:"自然", season:"spring", in:false, desc:"川沿いを覆う桜のトンネル。", why:"3月下旬〜4月上旬が見頃。" },
+    { name:"明治神宮外苑のイチョウ並木", cat:"自然", season:"autumn", in:false, desc:"黄金色のトンネルが続く並木道。", why:"11月中旬〜下旬が見頃。" },
+    { name:"teamLab(デジタルアート)", cat:"おでかけ", season:"all", in:true, desc:"光と映像に包まれる没入型の屋内アート。", why:"雨の日でも楽しめる人気スポット。" },
+    { name:"丸の内イルミネーション", cat:"夜景", season:"winter", in:false, desc:"街路樹が温かな光に包まれる。", why:"冬の夜のおでかけにぴったり。" },
+  ], foods:[
+    { name:"江戸前寿司", tag:"海鮮", desc:"江戸の技が息づく握り。仕事を施したネタを粋に。" },
+    { name:"もんじゃ焼き", tag:"粉もの", desc:"月島名物。とろりとした生地を鉄板でこそげて食べる。" },
+    { name:"深川めし", tag:"丼", desc:"あさりをネギと煮込んでご飯にかけた、下町の漁師めし。" },
+    { name:"老舗の天ぷら", tag:"郷土", desc:"ごま油で揚げる江戸前の天ぷら。サクッと軽い衣。" },
+  ]},
+  "神奈川県": { spots:[
+    { name:"箱根の温泉と芦ノ湖", cat:"温泉", season:"winter", in:true, desc:"名湯と湖、富士山の眺め。", why:"冬は温泉で温まるのが最高。" },
+    { name:"鎌倉の大仏と古寺めぐり", cat:"歴史", season:"all", in:false, desc:"大仏や鶴岡八幡宮など見どころ豊富。", why:"通年楽しめる古都さんぽ。" },
+    { name:"江の島", cat:"景色", season:"summer", in:false, desc:"海辺の島。展望台から相模湾を一望。", why:"夏は海水浴やサンセットが人気。" },
+    { name:"横浜・みなとみらい", cat:"夜景", season:"all", in:true, desc:"赤レンガ倉庫や観覧車、中華街。", why:"屋内施設も多く夜景もきれい。" },
+  ], foods:[
+    { name:"横浜中華街の点心", tag:"中華", desc:"本場の小籠包や焼売を食べ歩き。日本最大の中華街。" },
+    { name:"しらす丼", tag:"海鮮", desc:"湘南名物。とれたての生しらすはプリッと甘い。" },
+    { name:"家系ラーメン", tag:"麺", desc:"横浜発祥。豚骨醤油に太麺、海苔とほうれん草。" },
+    { name:"鎌倉野菜", tag:"郷土", desc:"彩り豊かな地場野菜。サラダやイタリアンで。" },
+  ]},
+  "新潟県": { spots:[
+    { name:"清津峡", cat:"自然", season:"autumn", in:true, desc:"水鏡のトンネルが映える渓谷。", why:"紅葉の秋が特に人気。トンネル内は雨でも。" },
+    { name:"佐渡島", cat:"景色", season:"summer", in:false, desc:"たらい舟や金山で知られる島。", why:"海が穏やかな夏が巡りやすい。" },
+    { name:"星峠の棚田", cat:"景色", season:"autumn", in:false, desc:"幾重にも連なる棚田の絶景。", why:"水を張る春、実りの秋が美しい。" },
+    { name:"ぽんしゅ館", cat:"おでかけ", season:"all", in:true, desc:"県内の地酒を利き酒できる駅の施設。", why:"屋内で天気を問わず楽しめる。" },
+  ], foods:[
+    { name:"コシヒカリのおにぎり", tag:"郷土", desc:"つやつや甘い新潟の米。塩むすびだけで絶品。" },
+    { name:"へぎそば", tag:"麺", desc:"布海苔をつなぎに使った、つるりとコシのあるそば。" },
+    { name:"のどぐろ", tag:"海鮮", desc:"脂の乗った高級魚。塩焼きや炙りでとろける旨み。" },
+    { name:"笹だんご", tag:"スイーツ", desc:"よもぎ餅をあんで包み笹で巻いた素朴な郷土菓子。" },
+  ]},
+  "富山県": { spots:[
+    { name:"黒部ダム", cat:"景色", season:"summer", in:false, desc:"豪快な観光放水で知られる巨大ダム。", why:"放水は夏〜秋。立山黒部アルペンルートの名所。" },
+    { name:"立山・雪の大谷", cat:"自然", season:"spring", in:false, desc:"高さ20m近い雪の壁の間を歩く。", why:"春の開通直後だけの絶景。" },
+    { name:"五箇山の合掌造り集落", cat:"まち歩き", season:"winter", in:false, desc:"世界遺産の茅葺き集落。", why:"雪に包まれる冬が幻想的。" },
+    { name:"富山県美術館", cat:"おでかけ", season:"all", in:true, desc:"デザインとアートの美術館。屋上庭園も。", why:"屋内で雨の日にも。" },
+  ], foods:[
+    { name:"ます寿司", tag:"海鮮", desc:"笹の香りのご飯に鱒をのせた押し寿司。駅弁の定番。" },
+    { name:"白エビ", tag:"海鮮", desc:"富山湾の宝石。かき揚げや刺身で上品な甘さ。" },
+    { name:"ホタルイカ", tag:"海鮮", season:"spring", desc:"春限定。青く光る富山湾の春の味覚。沖漬けも美味。" },
+    { name:"富山ブラックラーメン", tag:"麺", desc:"真っ黒な醤油スープが濃いめ。ご飯が進む濃い味。" },
+  ]},
+  "石川県": { spots:[
+    { name:"兼六園", cat:"自然", season:"winter", in:false, desc:"日本三名園のひとつ。", why:"雪吊りのある冬の雪景色が名物。" },
+    { name:"ひがし茶屋街", cat:"まち歩き", season:"all", in:false, desc:"格子戸の町家が並ぶ風情ある通り。", why:"金沢らしい街並みを通年。" },
+    { name:"白米千枚田", cat:"景色", season:"autumn", in:false, desc:"海に面した棚田の絶景。", why:"秋の実りや夕景が美しい。冬はイルミも。" },
+    { name:"金沢21世紀美術館", cat:"おでかけ", season:"all", in:true, desc:"プールの作品で有名な現代アート館。", why:"屋内で雨の日も楽しめる。" },
+  ], foods:[
+    { name:"金沢の海鮮・のどぐろ", tag:"海鮮", desc:"近江町市場の新鮮なネタ。脂の乗ったのどぐろは絶品。" },
+    { name:"治部煮", tag:"郷土", desc:"鴨肉やすだれ麩をとろみ出汁で煮た加賀の伝統料理。" },
+    { name:"金沢カレー", tag:"カレー", desc:"濃厚ルーにカツ、キャベツ。ステンレス皿で食べる名物。" },
+    { name:"香箱ガニ", tag:"海鮮", season:"winter", desc:"冬限定のメスのズワイガニ。内子と外子が濃厚。" },
+  ]},
+  "福井県": { spots:[
+    { name:"東尋坊", cat:"景色", season:"all", in:false, desc:"柱状の断崖が続く日本海の名勝。", why:"荒波と夕日が通年の見どころ。" },
+    { name:"永平寺", cat:"歴史", season:"autumn", in:true, desc:"杉木立に囲まれた禅の大本山。", why:"伽藍内を拝観でき、秋の紅葉も見事。" },
+    { name:"福井県立恐竜博物館", cat:"おでかけ", season:"all", in:true, desc:"恐竜王国・福井の世界有数の博物館。", why:"屋内で天気を問わず大満足。" },
+    { name:"丸岡城", cat:"歴史", season:"spring", in:true, desc:"現存天守の名城。", why:"春は桜に包まれ、天守内も見学可。" },
+  ], foods:[
+    { name:"越前がに", tag:"海鮮", season:"winter", desc:"冬の王様。茹でても焼いても甘く濃厚なズワイガニ。" },
+    { name:"ソースカツ丼", tag:"丼", desc:"薄めのカツを甘辛ソースにくぐらせ、ご飯にのせた福井流。" },
+    { name:"おろしそば", tag:"麺", desc:"冷たいそばに大根おろしのつゆ。ピリッとさっぱり。" },
+    { name:"若狭の焼き鯖", tag:"海鮮", desc:"丸ごと一本焼いた香ばしい鯖。鯖街道の名物。" },
+  ]},
+  "山梨県": { spots:[
+    { name:"富士五湖・河口湖", cat:"景色", season:"all", in:false, desc:"湖面に映る逆さ富士。", why:"空気の澄む秋冬がくっきり。" },
+    { name:"新倉山浅間公園", cat:"景色", season:"spring", in:false, desc:"五重塔・桜・富士山が一枚に収まる名所。", why:"桜の春が特に人気。" },
+    { name:"昇仙峡", cat:"自然", season:"autumn", in:false, desc:"奇岩と渓谷が続く景勝地。", why:"紅葉の秋が見事。" },
+    { name:"ワイナリー巡り(勝沼)", cat:"おでかけ", season:"autumn", in:true, desc:"日本ワイン発祥の地で試飲。", why:"ぶどうとワインの秋が旬。" },
+  ], foods:[
+    { name:"ほうとう", tag:"鍋", desc:"かぼちゃや野菜と太い平打ち麺を味噌で煮込んだ郷土鍋。" },
+    { name:"鳥もつ煮", tag:"郷土", desc:"甘辛く照り煮したレバーやハツ。B-1グランプリ王者。" },
+    { name:"ぶどう", tag:"フルーツ", season:"autumn", desc:"シャインマスカットや巨峰。秋の味覚狩りの定番。" },
+    { name:"吉田のうどん", tag:"麺", desc:"驚くほどコシの強い極太麺。馬肉とキャベツがのる。" },
+  ]},
+  "長野県": { spots:[
+    { name:"上高地", cat:"自然", season:"summer", in:false, desc:"梓川と穂高連峰の雄大な景色。", why:"開山は夏が中心。涼やかな高原歩き。" },
+    { name:"地獄谷野猿公苑", cat:"おでかけ", season:"winter", in:false, desc:"温泉に入るサルで有名。", why:"雪の中の猿が見られる冬が人気。" },
+    { name:"善光寺", cat:"歴史", season:"all", in:true, desc:"信州を代表する名刹。", why:"お戒壇めぐりなど屋内の見どころも。" },
+    { name:"松本城", cat:"歴史", season:"all", in:true, desc:"黒壁が美しい現存天守の国宝。", why:"天守内を見学でき、季節を問わない。" },
+  ], foods:[
+    { name:"信州そば", tag:"麺", desc:"冷涼な気候で育つそば。香り高くコシがある。" },
+    { name:"おやき", tag:"郷土", desc:"小麦生地に野菜やあんを包んで焼いた、素朴なおやつ。" },
+    { name:"五平餅", tag:"郷土", desc:"つぶしたご飯にくるみ味噌だれ。香ばしく焼いた山里の味。" },
+    { name:"信州りんご", tag:"フルーツ", season:"autumn", desc:"高原のりんご。蜜たっぷりでシャキッと甘い。" },
+  ]},
+  "岐阜県": { spots:[
+    { name:"白川郷", cat:"まち歩き", season:"winter", in:false, desc:"合掌造り集落が並ぶ世界遺産。", why:"雪景色とライトアップの冬が幻想的。" },
+    { name:"高山の古い町並み", cat:"まち歩き", season:"all", in:false, desc:"風情ある格子の町家が並ぶ飛騨の小京都。", why:"食べ歩きと朝市を通年楽しめる。" },
+    { name:"新穂高ロープウェイ", cat:"景色", season:"autumn", in:false, desc:"北アルプスの大パノラマ。", why:"紅葉の秋、雪山の冬が絶景。" },
+    { name:"下呂温泉", cat:"温泉", season:"winter", in:true, desc:"日本三名泉のひとつ。とろりとした湯。", why:"冬の湯めぐりが心地よい。" },
+  ], foods:[
+    { name:"飛騨牛", tag:"肉", desc:"きめ細かな霜降り。にぎり寿司やステーキ、朴葉味噌焼きで。" },
+    { name:"高山ラーメン", tag:"麺", desc:"細縮れ麺にあっさり醤油。昔ながらの中華そば。" },
+    { name:"朴葉味噌", tag:"郷土", desc:"朴の葉の上で味噌とねぎを焼く、ご飯が進む飛騨の味。" },
+    { name:"鶏ちゃん", tag:"肉", desc:"味噌だれに漬けた鶏肉を野菜と炒める郷土料理。" },
+  ]},
+  "静岡県": { spots:[
+    { name:"富士山・三保松原", cat:"景色", season:"all", in:false, desc:"松原越しに富士を望む世界遺産の名勝。", why:"空気の澄む秋冬がくっきり。" },
+    { name:"熱海温泉", cat:"温泉", season:"winter", in:true, desc:"海を望む温泉リゾート。", why:"冬の花火と湯めぐりが人気。" },
+    { name:"伊豆・城ヶ崎海岸", cat:"景色", season:"spring", in:false, desc:"吊り橋と断崖のスリルある散策路。", why:"過ごしやすい春がおすすめ。" },
+    { name:"浜名湖", cat:"景色", season:"summer", in:false, desc:"うなぎと湖のレジャーで知られる。", why:"夏の湖上アクティビティが楽しい。" },
+  ], foods:[
+    { name:"浜名湖うなぎ", tag:"丼", desc:"ふっくら香ばしいうな重。うなぎ養殖発祥の地。" },
+    { name:"富士宮やきそば", tag:"粉もの", desc:"コシのある麺に肉かすと削り粉。全国区のB級グルメ。" },
+    { name:"桜えび", tag:"海鮮", season:"spring", desc:"駿河湾の春の味覚。かき揚げや生でルビー色の甘み。" },
+    { name:"わさび・お茶", tag:"郷土", desc:"清流育ちの本わさびと、香り高い静岡茶。" },
+  ]},
+  "愛知県": { spots:[
+    { name:"名古屋城", cat:"歴史", season:"spring", in:true, desc:"金のしゃちほこで有名な名城。本丸御殿も。", why:"春は桜、御殿内は雨でも見学可。" },
+    { name:"熱田神宮", cat:"歴史", season:"all", in:false, desc:"由緒ある古社。杜の散策も気持ちいい。", why:"一年を通してお参りできる。" },
+    { name:"香嵐渓", cat:"自然", season:"autumn", in:false, desc:"約4000本のモミジが谷を彩る。", why:"東海随一の紅葉名所。秋が必見。" },
+    { name:"レゴランド/水族館", cat:"おでかけ", season:"all", in:true, desc:"名古屋港の屋内外レジャー。", why:"水族館など屋内施設で天気を問わず。" },
+  ], foods:[
+    { name:"ひつまぶし", tag:"丼", desc:"刻んだうなぎを三通りで。薬味、そのまま、出汁茶漬けで。" },
+    { name:"味噌カツ", tag:"丼", desc:"濃厚な八丁味噌だれをかけた、名古屋の定番とんかつ。" },
+    { name:"手羽先", tag:"肉", desc:"甘辛だれにこしょうを効かせた、パリッと香ばしい唐揚げ。" },
+    { name:"味噌煮込みうどん", tag:"麺", desc:"固めの麺を赤味噌でぐつぐつ。土鍋でアツアツ。" },
+  ]},
+  "三重県": { spots:[
+    { name:"伊勢神宮", cat:"歴史", season:"all", in:false, desc:"日本人の心のふるさととされる大社。", why:"おかげ横丁の食べ歩きも通年。" },
+    { name:"夫婦岩(二見浦)", cat:"景色", season:"summer", in:false, desc:"しめ縄で結ばれた二つの岩。", why:"夏至前後は岩の間から日の出。" },
+    { name:"ナガシマリゾート", cat:"おでかけ", season:"all", in:false, desc:"絶叫マシンと温泉、アウトレット。", why:"冬のイルミ「なばなの里」も必見。" },
+    { name:"熊野古道", cat:"自然", season:"autumn", in:false, desc:"苔むす石畳の世界遺産の参詣道。", why:"歩きやすい秋が気持ちいい。" },
+  ], foods:[
+    { name:"松阪牛", tag:"肉", desc:"とろける霜降りの最高級和牛。すき焼きや網焼きで。" },
+    { name:"伊勢うどん", tag:"麺", desc:"極太のやわらか麺に、黒く甘いたまりだれをからめて。" },
+    { name:"てこね寿司", tag:"海鮮", desc:"漬けにしたカツオを酢飯に混ぜた、漁師の手こね寿司。" },
+    { name:"赤福", tag:"スイーツ", desc:"こしあんでお餅を包んだ、伊勢参りの定番銘菓。" },
+  ]},
+  "滋賀県": { spots:[
+    { name:"琵琶湖", cat:"景色", season:"summer", in:false, desc:"日本一の湖。水遊びやクルーズ。", why:"湖水浴やサイクリングの夏に。" },
+    { name:"彦根城", cat:"歴史", season:"spring", in:true, desc:"現存天守の国宝。ひこにゃんでも人気。", why:"春は桜、天守内は雨でも見学可。" },
+    { name:"白鬚神社", cat:"景色", season:"all", in:false, desc:"湖上に立つ朱の鳥居「近江の厳島」。", why:"朝夕の光が美しい通年の名所。" },
+    { name:"メタセコイア並木", cat:"景色", season:"autumn", in:false, desc:"約2.4km続く並木道。", why:"紅葉の秋、新緑の初夏が美しい。" },
+  ], foods:[
+    { name:"近江牛", tag:"肉", desc:"日本最古の和牛ブランドのひとつ。まろやかな霜降り。" },
+    { name:"鮒ずし", tag:"郷土", desc:"フナを米で発酵させた、滋賀が誇る珍味・なれずし。" },
+    { name:"近江ちゃんぽん", tag:"麺", desc:"和風だしのあっさりスープに野菜たっぷり。" },
+    { name:"赤こんにゃく", tag:"郷土", desc:"鮮やかな赤色が特徴。近江八幡の名物。" },
+  ]},
+  "京都府": { spots:[
+    { name:"清水寺", cat:"歴史", season:"all", in:false, desc:"舞台からの眺めと参道の賑わい。", why:"四季それぞれ美しい京都の代表。" },
+    { name:"嵐山・渡月橋", cat:"景色", season:"autumn", in:false, desc:"山々と川が織りなす景勝地。", why:"紅葉シーズンの秋がとりわけ見事。" },
+    { name:"哲学の道", cat:"自然", season:"spring", in:false, desc:"桜並木が続く静かな散歩道。", why:"春は満開の桜が水面に映える。" },
+    { name:"伏見稲荷大社", cat:"歴史", season:"all", in:false, desc:"千本鳥居が連なる朱色の参道。", why:"いつ訪れても幻想的な通年スポット。" },
+    { name:"天橋立", cat:"景色", season:"summer", in:false, desc:"海を渡す松並木の砂州。", why:"夏は海水浴や遊覧船が楽しい。" },
+  ], foods:[
+    { name:"湯豆腐", tag:"郷土", season:"winter", desc:"なめらかな京豆腐を昆布出汁でことこと。冬に沁みる。" },
+    { name:"おばんざい", tag:"郷土", desc:"旬の野菜を使った京の家庭料理。少しずつ色々と。" },
+    { name:"にしんそば", tag:"麺", desc:"甘く炊いた身欠きにしんをのせた、京都のそば。" },
+    { name:"抹茶スイーツ", tag:"スイーツ", desc:"宇治抹茶のパフェやわらび餅。濃厚でほろ苦い。" },
+  ]},
+  "大阪府": { spots:[
+    { name:"道頓堀・心斎橋", cat:"まち歩き", season:"all", in:false, desc:"ネオンと食い倒れの繁華街。", why:"いつでも活気あふれる大阪の中心。" },
+    { name:"大阪城公園", cat:"歴史", season:"spring", in:true, desc:"天守閣とお堀、広い公園。", why:"春は桜、天守内は雨でも見学可。" },
+    { name:"ユニバーサル・スタジオ・ジャパン", cat:"おでかけ", season:"all", in:false, desc:"人気のテーマパーク。", why:"季節ごとのイベントが充実。" },
+    { name:"海遊館", cat:"おでかけ", season:"all", in:true, desc:"ジンベエザメが泳ぐ世界最大級の水族館。", why:"屋内で雨の日も一日楽しめる。" },
+  ], foods:[
+    { name:"たこ焼き", tag:"粉もの", desc:"外カリ中トロ。大阪のソウルフード、食べ歩きの王道。" },
+    { name:"お好み焼き", tag:"粉もの", desc:"キャベツたっぷりの生地を鉄板で。ソースとマヨで。" },
+    { name:"串カツ", tag:"揚げ物", desc:"サクサク衣をソースにドボン。ソースの二度漬け禁止。" },
+    { name:"きつねうどん", tag:"麺", desc:"甘いお揚げがのった、やさしい出汁のうどん発祥の味。" },
+  ]},
+  "兵庫県": { spots:[
+    { name:"姫路城", cat:"歴史", season:"spring", in:true, desc:"白鷺のように美しい世界遺産の現存天守。", why:"春は桜、天守内も見学でき天気を問わず。" },
+    { name:"神戸・北野異人館", cat:"まち歩き", season:"all", in:true, desc:"異国情緒あふれる洋館街。", why:"館内見学で雨でも楽しめる。" },
+    { name:"六甲山からの夜景", cat:"夜景", season:"all", in:false, desc:"1000万ドルと称される神戸の夜景。", why:"空気が澄む秋冬がとりわけ美しい。" },
+    { name:"城崎温泉", cat:"温泉", season:"winter", in:true, desc:"柳並木の川沿いに外湯が並ぶ湯の町。", why:"冬はカニと外湯めぐりが最高。" },
+  ], foods:[
+    { name:"神戸牛", tag:"肉", desc:"世界が憧れる極上の霜降り。鉄板焼きステーキで。" },
+    { name:"明石焼き", tag:"粉もの", desc:"ふわとろの卵生地にタコ。出汁につけて食べる上品な味。" },
+    { name:"そばめし", tag:"粉もの", desc:"焼きそばとご飯を鉄板で炒めた、長田発祥のB級グルメ。" },
+    { name:"松葉がに", tag:"海鮮", season:"winter", desc:"日本海の冬の味覚。甘く締まった身とカニ味噌。" },
+  ]},
+  "奈良県": { spots:[
+    { name:"奈良公園と東大寺", cat:"歴史", season:"all", in:false, desc:"大仏とシカが迎える広大な公園。", why:"通年楽しめる奈良の定番。" },
+    { name:"吉野山の桜", cat:"自然", season:"spring", in:false, desc:"山全体を染める一目千本の桜。", why:"4月が見頃。日本有数の桜の名所。" },
+    { name:"談山神社", cat:"歴史", season:"autumn", in:false, desc:"木造十三重塔と紅葉の調和。", why:"秋の紅葉がとりわけ美しい。" },
+    { name:"法隆寺", cat:"歴史", season:"all", in:true, desc:"世界最古の木造建築群。世界遺産。", why:"堂内拝観もあり通年楽しめる。" },
+  ], foods:[
+    { name:"柿の葉寿司", tag:"海鮮", desc:"鯖や鮭を柿の葉で包んだ押し寿司。ほのかな葉の香り。" },
+    { name:"三輪そうめん", tag:"麺", desc:"そうめん発祥の地。細くコシのある極上の麺。" },
+    { name:"茶粥", tag:"郷土", desc:"ほうじ茶で炊いたさらりとしたお粥。奈良の朝の味。" },
+    { name:"奈良漬", tag:"郷土", desc:"瓜などを酒粕に漬け込んだ、香り高いお漬物。" },
+  ]},
+  "和歌山県": { spots:[
+    { name:"高野山", cat:"歴史", season:"autumn", in:true, desc:"山上に広がる真言密教の聖地。宿坊も。", why:"紅葉の秋が荘厳。堂内拝観で雨でも。" },
+    { name:"那智の滝", cat:"自然", season:"all", in:false, desc:"落差133mの日本一の名瀑。熊野の聖地。", why:"朱の三重塔との眺めは通年の絶景。" },
+    { name:"白浜・円月島", cat:"景色", season:"summer", in:false, desc:"白い砂浜と穴の開いた奇岩。", why:"夏は海水浴、夕日も美しい。" },
+    { name:"アドベンチャーワールド", cat:"おでかけ", season:"all", in:false, desc:"パンダに会えるテーマパーク。", why:"動物とのふれあいが通年人気。" },
+  ], foods:[
+    { name:"和歌山ラーメン", tag:"麺", desc:"豚骨醤油の濃厚スープ。早すしと一緒に食べる文化も。" },
+    { name:"めはり寿司", tag:"郷土", desc:"高菜の葉で大きく握ったおにぎり。山仕事のお弁当。" },
+    { name:"生まぐろ", tag:"海鮮", desc:"勝浦に揚がる生のマグロ。鮮度抜群のとろける赤身。" },
+    { name:"みかん", tag:"フルーツ", season:"winter", desc:"生産量日本一。冬のこたつで味わう甘いみかん。" },
+  ]},
+  "鳥取県": { spots:[
+    { name:"鳥取砂丘", cat:"景色", season:"all", in:false, desc:"日本最大級の砂丘。らくだ体験も。", why:"風紋が美しく、夏はパラグライダーも。" },
+    { name:"砂の美術館", cat:"おでかけ", season:"all", in:true, desc:"精巧な砂像を展示する世界初の屋内施設。", why:"雨でも砂の芸術を楽しめる。" },
+    { name:"水木しげるロード", cat:"まち歩き", season:"all", in:false, desc:"妖怪のブロンズ像が並ぶ境港の通り。", why:"ゲゲゲの世界を通年満喫。" },
+    { name:"三朝温泉", cat:"温泉", season:"winter", in:true, desc:"世界有数のラジウム温泉。", why:"冬の湯治でぽかぽか。" },
+  ], foods:[
+    { name:"松葉がに", tag:"海鮮", season:"winter", desc:"冬の王者ズワイガニ。身は甘く味噌は濃厚。" },
+    { name:"鳥取牛骨ラーメン", tag:"麺", desc:"牛骨でとった甘くコクのあるスープが珍しいご当地麺。" },
+    { name:"岩ガキ", tag:"海鮮", season:"summer", desc:"夏が旬の大ぶりの岩牡蠣。クリーミーで濃厚。" },
+    { name:"二十世紀梨", tag:"フルーツ", season:"autumn", desc:"みずみずしくシャリッと。鳥取を代表する秋の梨。" },
+  ]},
+  "島根県": { spots:[
+    { name:"出雲大社", cat:"歴史", season:"all", in:false, desc:"縁結びの神様。巨大なしめ縄で有名。", why:"神在月の秋は特ににぎわう。" },
+    { name:"足立美術館", cat:"おでかけ", season:"all", in:true, desc:"庭園が「生きた絵画」と評される美術館。", why:"屋内から名庭を眺め、雨でも美しい。" },
+    { name:"松江城", cat:"歴史", season:"all", in:true, desc:"現存天守の国宝。堀川めぐりも。", why:"天守内を見学でき季節を問わない。" },
+    { name:"宍道湖の夕日", cat:"景色", season:"all", in:false, desc:"日本夕日百選の絶景。", why:"空気の澄む秋冬がくっきり美しい。" },
+  ], foods:[
+    { name:"出雲そば", tag:"麺", desc:"殻ごと挽いた黒いそば。割子に盛ってつゆをかけて。" },
+    { name:"しじみ汁", tag:"海鮮", desc:"宍道湖の大粒しじみ。うまみたっぷりの味噌汁。" },
+    { name:"のどぐろ", tag:"海鮮", desc:"脂の乗った高級魚。塩焼きや煮付けで。" },
+    { name:"出雲ぜんざい", tag:"スイーツ", desc:"ぜんざい発祥の地。縁起物の紅白団子入り。" },
+  ]},
+  "岡山県": { spots:[
+    { name:"岡山後楽園", cat:"自然", season:"all", in:false, desc:"日本三名園のひとつ。広々とした大名庭園。", why:"四季の花と烏城の眺めが楽しめる。" },
+    { name:"倉敷美観地区", cat:"まち歩き", season:"all", in:false, desc:"白壁と柳、川舟が風情ある町並み。", why:"レトロな散策が通年楽しい。" },
+    { name:"大原美術館", cat:"おでかけ", season:"all", in:true, desc:"西洋名画を集めた日本初の私立美術館。", why:"屋内で雨の日も満喫。" },
+    { name:"鷲羽山", cat:"景色", season:"summer", in:false, desc:"瀬戸大橋と多島美を望む展望地。", why:"夕日が美しい夏〜秋に。" },
+  ], foods:[
+    { name:"ばらずし", tag:"海鮮", desc:"魚介や野菜を彩りよく散らした、岡山の華やかなちらし寿司。" },
+    { name:"ままかり", tag:"海鮮", desc:"酢漬けが絶品の小魚。ご飯を借りるほど旨いの意。" },
+    { name:"蒜山焼きそば", tag:"粉もの", desc:"味噌だれで炒める、鶏肉とキャベツの香ばしい焼きそば。" },
+    { name:"白桃・マスカット", tag:"フルーツ", season:"summer", desc:"果物王国の夏の宝石。上品な甘さと香り。" },
+  ]},
+  "広島県": { spots:[
+    { name:"厳島神社(宮島)", cat:"歴史", season:"all", in:false, desc:"海に浮かぶ朱の大鳥居。世界遺産。", why:"満潮も干潮も見どころの通年の名所。" },
+    { name:"原爆ドーム・平和記念公園", cat:"歴史", season:"all", in:true, desc:"平和を伝える世界遺産。資料館も。", why:"資料館は屋内で天気を問わない。" },
+    { name:"尾道の坂道さんぽ", cat:"まち歩き", season:"spring", in:false, desc:"坂と路地、瀬戸内の海の眺め。", why:"春は穏やかで散策に最適。" },
+    { name:"三段峡", cat:"自然", season:"autumn", in:false, desc:"渓谷美が続くハイキングコース。", why:"秋の紅葉が渓谷に映える。" },
+  ], foods:[
+    { name:"広島風お好み焼き", tag:"粉もの", desc:"そば入りの重ね焼き。キャベツたっぷりでボリューム満点。" },
+    { name:"牡蠣", tag:"海鮮", season:"winter", desc:"生産量日本一。焼き・フライ・土手鍋、冬の味覚の王。" },
+    { name:"あなご飯", tag:"丼", desc:"宮島名物。甘辛いたれで焼いた穴子をご飯にぎっしり。" },
+    { name:"尾道ラーメン", tag:"麺", desc:"背脂の浮いた魚介醤油スープに平打ち麺。" },
+  ]},
+  "山口県": { spots:[
+    { name:"角島大橋", cat:"景色", season:"summer", in:false, desc:"エメラルドの海を渡る絶景の橋。", why:"海が青く輝く夏が最高。" },
+    { name:"秋吉台・秋芳洞", cat:"自然", season:"all", in:true, desc:"日本最大のカルスト台地と大鍾乳洞。", why:"洞内は一年中ひんやり。雨でもOK。" },
+    { name:"元乃隅神社", cat:"景色", season:"all", in:false, desc:"海へ連なる123基の赤い鳥居。", why:"青い海と朱の対比が通年美しい。" },
+    { name:"錦帯橋", cat:"歴史", season:"spring", in:false, desc:"五連のアーチが美しい木造橋。", why:"桜に包まれる春が見事。" },
+  ], foods:[
+    { name:"ふぐ", tag:"海鮮", season:"winter", desc:"下関名物。薄造りのてっさや、ふぐちりで冬の贅沢を。" },
+    { name:"瓦そば", tag:"麺", desc:"熱した瓦の上で茶そばを焼く、見た目も楽しい郷土麺。" },
+    { name:"いとこ煮", tag:"郷土", desc:"小豆とだんごの甘い煮物。萩の祝いの席の味。" },
+    { name:"夏みかん", tag:"フルーツ", season:"spring", desc:"萩の初夏の味。さわやかな酸味と香り。" },
+  ]},
+  "徳島県": { spots:[
+    { name:"鳴門の渦潮", cat:"景色", season:"spring", in:false, desc:"轟音とともに渦巻く海の迫力。", why:"大潮の春・秋が特に大きい。" },
+    { name:"祖谷のかずら橋", cat:"自然", season:"autumn", in:false, desc:"渓谷に架かるスリル満点のつり橋。", why:"紅葉の秋が絶景。" },
+    { name:"大塚国際美術館", cat:"おでかけ", season:"all", in:true, desc:"世界の名画を原寸で再現した陶板美術館。", why:"屋内で一日たっぷり。雨でも安心。" },
+    { name:"阿波おどり", cat:"祭り", season:"summer", in:false, desc:"熱気あふれる夏の伝統舞踊。", why:"8月のお盆に開催。" },
+  ], foods:[
+    { name:"徳島ラーメン", tag:"麺", desc:"濃い豚骨醤油に生卵。ご飯と一緒に食べるのが流儀。" },
+    { name:"すだち料理", tag:"郷土", desc:"さわやかな香りのすだちを、焼き魚やそばにきゅっと。" },
+    { name:"鳴門鯛", tag:"海鮮", desc:"渦潮にもまれた身の締まった鯛。刺身や鯛めしで。" },
+    { name:"阿波尾鶏", tag:"肉", desc:"歯ごたえと旨みのある徳島のブランド地鶏。" },
+  ]},
+  "香川県": { spots:[
+    { name:"栗林公園", cat:"自然", season:"all", in:false, desc:"ミシュラン三つ星の広大な大名庭園。", why:"四季折々の景色が楽しめる。" },
+    { name:"金刀比羅宮", cat:"歴史", season:"all", in:false, desc:"785段の石段で知られる「こんぴらさん」。", why:"登りきった達成感と眺めは通年。" },
+    { name:"父母ヶ浜", cat:"景色", season:"summer", in:false, desc:"ウユニ塩湖のような鏡の絶景。", why:"干潮と夕暮れが重なる夏が人気。" },
+    { name:"直島のアート", cat:"おでかけ", season:"all", in:true, desc:"美術館や草間彌生のかぼちゃが点在する島。", why:"屋内美術館もあり通年楽しめる。" },
+  ], foods:[
+    { name:"讃岐うどん", tag:"麺", desc:"強いコシとつるつるののど越し。本場のセルフ店は必訪。" },
+    { name:"骨付鳥", tag:"肉", desc:"骨付きもも肉をスパイシーに焼いた、ジューシーな名物。" },
+    { name:"しょうゆ豆", tag:"郷土", desc:"炒ったそら豆を甘辛い醤油だれに漬けた郷土の味。" },
+    { name:"小豆島オリーブ", tag:"郷土", desc:"国産オリーブ発祥の地。オイルや新漬けで。" },
+  ]},
+  "愛媛県": { spots:[
+    { name:"道後温泉本館", cat:"温泉", season:"winter", in:true, desc:"千と千尋を思わせる日本最古級の温泉。", why:"レトロな湯浴みは冬にぴったり。" },
+    { name:"松山城", cat:"歴史", season:"spring", in:true, desc:"山上にそびえる現存天守。ロープウェイで。", why:"春は桜、天守内も見学可。" },
+    { name:"しまなみ海道", cat:"景色", season:"summer", in:false, desc:"島々を結ぶ橋をサイクリング。", why:"海風が心地よい初夏〜夏に。" },
+    { name:"下灘駅", cat:"景色", season:"all", in:false, desc:"海に一番近い駅と呼ばれる絶景の無人駅。", why:"夕暮れの空と海が美しい。" },
+  ], foods:[
+    { name:"鯛めし", tag:"海鮮", desc:"宇和島は生の鯛を卵だれで、松山は炊き込みで。二つの味。" },
+    { name:"じゃこ天", tag:"練り物", desc:"小魚をすり身にして揚げた、骨ごと香ばしい練り物。" },
+    { name:"今治焼豚玉子飯", tag:"丼", desc:"焼豚と半熟卵を甘辛だれで。ご飯が進むB級グルメ。" },
+    { name:"みかん", tag:"フルーツ", season:"winter", desc:"柑橘王国の冬の味。甘くてジューシー。" },
+  ]},
+  "高知県": { spots:[
+    { name:"桂浜", cat:"景色", season:"all", in:false, desc:"坂本龍馬像が太平洋を見つめる名勝。", why:"雄大な海の眺めは通年。" },
+    { name:"四万十川", cat:"自然", season:"summer", in:false, desc:"最後の清流。沈下橋やカヌーで川遊び。", why:"水遊びが気持ちいい夏に。" },
+    { name:"仁淀川", cat:"自然", season:"autumn", in:false, desc:"「仁淀ブルー」と呼ばれる奇跡の清流。", why:"水が澄む秋がとりわけ青い。" },
+    { name:"高知城", cat:"歴史", season:"spring", in:true, desc:"天守と本丸御殿がそろって残る名城。", why:"春は桜、内部も見学でき天気を問わず。" },
+  ], foods:[
+    { name:"カツオのたたき", tag:"海鮮", desc:"藁焼きで香ばしく。塩やにんにくでガツンと豪快に。" },
+    { name:"皿鉢料理", tag:"郷土", desc:"大皿に刺身や寿司を豪快に盛る、宴会の高知流。" },
+    { name:"鍋焼きラーメン", tag:"麺", desc:"須崎名物。土鍋でぐつぐつ、鶏ガラ醤油の熱々麺。" },
+    { name:"柚子", tag:"郷土", desc:"生産量日本一。香り高い柚子を料理や飲み物に。" },
+  ]},
+  "福岡県": { spots:[
+    { name:"太宰府天満宮", cat:"歴史", season:"spring", in:false, desc:"学問の神様。参道のグルメも人気。", why:"春は約6000本の梅が咲く名所。" },
+    { name:"中洲の屋台", cat:"まち歩き", season:"all", in:false, desc:"川沿いに並ぶ本場の屋台。", why:"一年中、博多の夜を楽しめる。" },
+    { name:"門司港レトロ", cat:"まち歩き", season:"winter", in:false, desc:"大正ロマン漂う港町。", why:"冬はイルミネーションが美しい。" },
+    { name:"マリンワールド海の中道", cat:"おでかけ", season:"all", in:true, desc:"玄界灘がテーマの水族館。", why:"屋内で雨の日も楽しめる。" },
+  ], foods:[
+    { name:"博多ラーメン", tag:"麺", desc:"濃厚とんこつに極細麺。替え玉でもう一杯。" },
+    { name:"もつ鍋", tag:"鍋", season:"winter", desc:"ぷりぷりのもつとニラ・キャベツ。冬にうれしい博多鍋。" },
+    { name:"明太子", tag:"郷土", desc:"ピリ辛のたらこ。炊きたてご飯にのせれば無限。" },
+    { name:"水炊き", tag:"鍋", desc:"鶏の白濁スープで煮込む、やさしい博多の鍋料理。" },
+  ]},
+  "佐賀県": { spots:[
+    { name:"吉野ヶ里歴史公園", cat:"歴史", season:"spring", in:true, desc:"弥生時代の環濠集落を復元した公園。", why:"春は散策に最適。展示館は雨でも。" },
+    { name:"有田・陶器市さんぽ", cat:"まち歩き", season:"spring", in:false, desc:"磁器発祥の地、やきものの町並み。", why:"GWの陶器市が有名。" },
+    { name:"御船山楽園", cat:"自然", season:"autumn", in:false, desc:"断崖を背にした庭園。ライトアップも。", why:"紅葉と新緑の夜が幻想的。" },
+    { name:"嬉野温泉", cat:"温泉", season:"winter", in:true, desc:"日本三大美肌の湯。", why:"冬の湯めぐりでつるつるに。" },
+  ], foods:[
+    { name:"呼子のイカ活造り", tag:"海鮮", desc:"透き通る新鮮なイカ。コリコリの食感と甘み。" },
+    { name:"佐賀牛", tag:"肉", desc:"きめ細かく上質な霜降りのブランド和牛。" },
+    { name:"シシリアンライス", tag:"丼", desc:"ご飯に炒め肉と生野菜、マヨをかけた佐賀のご当地飯。" },
+    { name:"小城羊羹", tag:"スイーツ", desc:"表面が砂糖でシャリッとした、素朴な佐賀の羊羹。" },
+  ]},
+  "長崎県": { spots:[
+    { name:"稲佐山の夜景", cat:"夜景", season:"all", in:false, desc:"世界新三大夜景に数えられる絶景。", why:"空気の澄む秋冬がくっきり美しい。" },
+    { name:"グラバー園", cat:"まち歩き", season:"all", in:false, desc:"洋館が並ぶ港を望む丘の庭園。", why:"異国情緒を通年楽しめる。" },
+    { name:"ハウステンボス", cat:"おでかけ", season:"winter", in:false, desc:"ヨーロッパの街並みとイルミネーション。", why:"冬の光の王国が圧巻。" },
+    { name:"軍艦島(端島)", cat:"歴史", season:"summer", in:false, desc:"海に浮かぶ廃墟の島。上陸ツアーも。", why:"海が穏やかな夏が上陸しやすい。" },
+  ], foods:[
+    { name:"ちゃんぽん", tag:"麺", desc:"魚介と野菜たっぷり、まろやかスープの長崎名物。" },
+    { name:"皿うどん", tag:"麺", desc:"パリパリ麺にとろりとした具だくさんあんをかけて。" },
+    { name:"カステラ", tag:"スイーツ", desc:"しっとり甘い南蛮渡来の銘菓。底のザラメが美味。" },
+    { name:"トルコライス", tag:"丼", desc:"ピラフ・ナポリタン・カツが一皿に。長崎の欲ばりプレート。" },
+  ]},
+  "熊本県": { spots:[
+    { name:"熊本城", cat:"歴史", season:"spring", in:true, desc:"復興が進む壮大な名城。", why:"春は桜、天守内の展示も見学可。" },
+    { name:"阿蘇山", cat:"自然", season:"summer", in:false, desc:"雄大なカルデラと草原、火口。", why:"緑まぶしい初夏〜夏のドライブに。" },
+    { name:"黒川温泉", cat:"温泉", season:"winter", in:true, desc:"情緒ある山あいの露天風呂めぐり。", why:"冬の湯めぐり手形でぽかぽか。" },
+    { name:"鍋ヶ滝", cat:"自然", season:"autumn", in:false, desc:"裏側に回れる「裏見の滝」。", why:"新緑と紅葉が美しい。" },
+  ], foods:[
+    { name:"馬刺し", tag:"肉", desc:"甘くとろける熊本名物。霜降りや赤身を生姜醤油で。" },
+    { name:"太平燕(タイピーエン)", tag:"麺", desc:"春雨と海鮮・野菜のあっさりスープ。熊本のソウルフード。" },
+    { name:"辛子蓮根", tag:"郷土", desc:"れんこんの穴に辛子味噌を詰めて揚げた、ツンと辛い名物。" },
+    { name:"いきなり団子", tag:"スイーツ", desc:"さつまいもとあんを生地で包んで蒸した素朴なおやつ。" },
+  ]},
+  "大分県": { spots:[
+    { name:"別府地獄めぐり", cat:"景色", season:"all", in:false, desc:"赤や青に色づく個性豊かな源泉群。", why:"湯けむり立ちのぼる景色は通年。" },
+    { name:"湯布院", cat:"温泉", season:"winter", in:true, desc:"由布岳を望すおしゃれな温泉の町。", why:"冬の朝霧と湯めぐりが風情ある。" },
+    { name:"九重夢大吊橋", cat:"景色", season:"autumn", in:false, desc:"標高777m、滝と渓谷を見渡す大吊橋。", why:"紅葉の秋が圧巻。" },
+    { name:"宇佐神宮", cat:"歴史", season:"all", in:false, desc:"全国の八幡宮の総本宮。", why:"荘厳な杜の参拝は通年。" },
+  ], foods:[
+    { name:"とり天", tag:"揚げ物", desc:"鶏肉の天ぷら。ふわっと軽い衣をポン酢や辛子で。" },
+    { name:"関アジ・関サバ", tag:"海鮮", desc:"豊後水道のブランド魚。身の締まった刺身は絶品。" },
+    { name:"だんご汁", tag:"鍋", desc:"平たい小麦だんごと野菜を味噌で煮込んだ郷土汁。" },
+    { name:"りゅうきゅう", tag:"海鮮", desc:"刺身を甘辛だれに漬けた漁師めし。ご飯にのせても。" },
+  ]},
+  "宮崎県": { spots:[
+    { name:"高千穂峡", cat:"自然", season:"summer", in:false, desc:"柱状の断崖と滝を貸しボートで巡る絶景。", why:"緑まぶしい初夏〜夏が涼やか。" },
+    { name:"青島神社", cat:"景色", season:"all", in:false, desc:"「鬼の洗濯板」の岩に囲まれた南国の島。", why:"ヤシ茂る常夏ムードは通年。" },
+    { name:"鵜戸神宮", cat:"歴史", season:"all", in:false, desc:"断崖の洞窟に鎮まる朱の社殿。", why:"海の絶景とともに通年の名所。" },
+    { name:"サンメッセ日南", cat:"景色", season:"all", in:false, desc:"海を望む丘に並ぶモアイ像。", why:"青空と海に映える写真スポット。" },
+  ], foods:[
+    { name:"チキン南蛮", tag:"揚げ物", desc:"揚げた鶏を甘酢にくぐらせ、タルタルをたっぷり。発祥の地。" },
+    { name:"冷や汁", tag:"郷土", season:"summer", desc:"冷たい味噌だしをご飯にかける、夏の食欲が進む郷土飯。" },
+    { name:"地鶏の炭火焼", tag:"肉", desc:"真っ黒に炭火で焼いた地鶏。香ばしく歯ごたえ抜群。" },
+    { name:"マンゴー", tag:"フルーツ", season:"summer", desc:"「太陽のタマゴ」。とろける濃厚な甘さの高級マンゴー。" },
+  ]},
+  "鹿児島県": { spots:[
+    { name:"桜島", cat:"景色", season:"all", in:false, desc:"今も噴煙をあげる雄大な活火山。", why:"フェリーや足湯から通年眺められる。" },
+    { name:"屋久島", cat:"自然", season:"summer", in:false, desc:"縄文杉と苔むす森の世界自然遺産。", why:"トレッキングは緑豊かな季節に。" },
+    { name:"仙巌園", cat:"歴史", season:"all", in:false, desc:"桜島を借景にした島津家の名庭園。", why:"雄大な景色を通年楽しめる。" },
+    { name:"指宿の砂むし温泉", cat:"温泉", season:"winter", in:true, desc:"砂に埋まって温まる名物温泉。", why:"冬でもぽかぽか。雨でも体験可。" },
+  ], foods:[
+    { name:"黒豚とんかつ", tag:"揚げ物", desc:"甘くて柔らかい鹿児島黒豚。しゃぶしゃぶでも。" },
+    { name:"鶏飯(けいはん)", tag:"丼", desc:"ほぐし鶏や錦糸卵をご飯にのせ、鶏出汁をかける奄美の味。" },
+    { name:"さつま揚げ", tag:"練り物", desc:"ふんわり甘い揚げかまぼこ。発祥の地の本場の味。" },
+    { name:"白くま", tag:"スイーツ", season:"summer", desc:"練乳とフルーツたっぷりのかき氷。夏の鹿児島の定番。" },
+  ]},
+  "沖縄県": { spots:[
+    { name:"美ら海水族館", cat:"おでかけ", season:"all", in:true, desc:"巨大水槽のジンベエザメは圧巻。", why:"天候を問わず楽しめる通年の人気。" },
+    { name:"首里城", cat:"歴史", season:"all", in:false, desc:"琉球王国の歴史を伝える城。", why:"沖縄の文化にふれられる定番。" },
+    { name:"古宇利島・エメラルドビーチ", cat:"景色", season:"summer", in:false, desc:"透き通る海と白い砂浜。", why:"海開き後の夏がベストシーズン。" },
+    { name:"備瀬のフクギ並木", cat:"まち歩き", season:"spring", in:false, desc:"木漏れ日の並木道を散策。", why:"暑すぎない春が歩きやすい。" },
+  ], foods:[
+    { name:"沖縄そば", tag:"麺", desc:"かつおと豚のだしに、もちもち麺とソーキ(軟骨肉)。" },
+    { name:"ゴーヤチャンプルー", tag:"郷土", desc:"ゴーヤと豆腐・卵の炒めもの。ほろ苦さがクセになる。" },
+    { name:"ラフテー", tag:"肉", desc:"豚の三枚肉を泡盛と黒糖でとろとろに煮込んだ琉球料理。" },
+    { name:"海ぶどう", tag:"海鮮", desc:"プチプチはじける海藻。南国の海の味。" },
+  ]},
+};
+
+// ============================================================
+// 画面を組み立てる
+// ============================================================
+const prefSelect = document.getElementById("pref");
+Object.keys(DATA).forEach(p => {
+  const o = document.createElement("option");
+  o.value = p; o.textContent = p;
+  prefSelect.appendChild(o);
+});
+
+const dateInput = document.getElementById("date");
+dateInput.value = new Date().toISOString().slice(0, 10);
+
+const form = document.getElementById("form");
+const result = document.getElementById("result");
+
+// しぼりこみの状態（今回の表示ぶんだけ保持）
+let current = null;      // { pref, sKey, rainy, place, spots, foods, season, dateLabel }
+let activeCat = "すべて";
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const pref = prefSelect.value;
+  const dateStr = dateInput.value;
+  const weather = document.getElementById("weather").value;
+  const place = document.getElementById("place").value.trim();
+  if (!pref || !dateStr) return;
+
+  const month = Number(dateStr.slice(5, 7));
+  const sKey = seasonOf(month);
+  const season = SEASONS[sKey];
+  const rainy = (weather === "rainy" || weather === "snowy");
+
+  // スポットの並べ替え（季節を優先、雨・雪なら屋内を上に）
+  const score = (spot) => {
+    let s = (spot.season === sKey) ? 0 : (spot.season === "all" ? 10 : 20);
+    if (rainy && !spot.in) s += 15;   // 雨・雪の日は屋外を少し下げる
+    return s;
+  };
+  const spots = DATA[pref].spots.slice().sort((a, b) => score(a) - score(b));
+
+  // ご飯も旬を優先
+  const foods = DATA[pref].foods.slice().sort((a, b) => {
+    const fa = (a.season === sKey) ? 0 : 1;
+    const fb = (b.season === sKey) ? 0 : 1;
+    return fa - fb;
+  });
+
+  const d = new Date(dateStr + "T00:00:00");
+  const dateLabel = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+
+  const weatherLabel = { sunny:"☀️ 晴れ", cloudy:"☁️ くもり", rainy:"🌧️ 雨", snowy:"❄️ 雪" }[weather] || "";
+
+  current = { pref, sKey, rainy, place, spots, foods, season, dateLabel, weatherLabel };
+  activeCat = "すべて";
+  render();
+  result.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+function render() {
+  const { pref, sKey, rainy, place, spots, foods, season, dateLabel, weatherLabel } = current;
+
+  // カテゴリ一覧
+  const cats = ["すべて", ...Array.from(new Set(spots.map(s => s.cat)))];
+
+  // 表示するスポット（カテゴリしぼりこみ）
+  let shown = (activeCat === "すべて") ? spots : spots.filter(s => s.cat === activeCat);
+
+  let html = `
+    <div class="result-head"><h2>${pref}のおすすめ</h2></div>
+    <div class="tags">
+      <span class="chip-tag" style="--accent:${season.color}">${dateLabel}は「${season.label}」</span>
+      ${weatherLabel ? `<span class="chip-tag">${weatherLabel}</span>` : ""}
+    </div>
+    <p class="result-note">${season.note}。${rainy ? "雨・雪の日なので、屋内で楽しめるスポットを上に並べています。" : "この季節に合うスポットを上に並べています。"}</p>
+    <div class="filters">
+      ${cats.map(c => `<button type="button" data-cat="${escapeHtml(c)}" aria-pressed="${c === activeCat}">${escapeHtml(c)}</button>`).join("")}
+    </div>
+  `;
+
+  html += `<div class="cards">`;
+  if (shown.length === 0) {
+    html += `<div class="empty">このカテゴリのスポットはありません。</div>`;
+  }
+  shown.forEach(spot => {
+    const isSeason = spot.season === sKey;
+    const isAll = spot.season === "all";
+    const sc = isAll ? "var(--accent)" : SEASONS[spot.season].color;
+    const badgeLabel = isAll ? "通年おすすめ" : SEASONS[spot.season].label + "が見頃";
+    const hit = place && (spot.name.includes(place) || spot.desc.includes(place));
+    const rainPick = rainy && spot.in;
+    html += `
+      <article class="card" style="--seasonc:${sc}">
+        <div class="card-top">
+          <h3>${escapeHtml(spot.name)}</h3>
+          <span class="badge">${badgeLabel}</span>
+          <span class="badge cat">${escapeHtml(spot.cat)}</span>
+          ${isSeason ? `<span class="pick">今の季節にぴったり</span>` : ""}
+          ${rainPick ? `<span class="pick rain">雨でもOK</span>` : ""}
+          ${hit ? `<span class="pick">地名が一致</span>` : ""}
+        </div>
+        <p>${escapeHtml(spot.desc)}</p>
+        <p class="why">💡 ${escapeHtml(spot.why)}</p>
+      </article>`;
+  });
+  html += `</div>`;
+
+  // ご飯セクション
+  html += `
+    <section class="food-sec">
+      <div class="food-head"><span style="font-size:1.4rem">🍚</span><h2>${pref}のご飯</h2></div>
+      <p class="food-sub">旅のもうひとつの主役。ご当地グルメをどうぞ（旬のものは上に）。</p>
+      <div class="food-grid">`;
+  foods.forEach(f => {
+    const shun = f.season === sKey;
+    html += `
+      <div class="food-card">
+        <div class="ftop">
+          <h4>${escapeHtml(f.name)}</h4>
+          <span class="ftag">${escapeHtml(f.tag)}</span>
+          ${shun ? `<span class="fshun">今が旬</span>` : ""}
+        </div>
+        <p>${escapeHtml(f.desc)}</p>
+      </div>`;
+  });
+  html += `</div></section>`;
+
+  result.innerHTML = html;
+  result.hidden = false;
+
+  // カテゴリボタンの動作
+  result.querySelectorAll(".filters button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      activeCat = btn.dataset.cat;
+      render();
+    });
+  });
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, c => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+  ));
+}
+</script>
+</body>
+</html>
